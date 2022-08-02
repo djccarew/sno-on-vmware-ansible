@@ -253,10 +253,10 @@ ii. View the progress . The overall install progress is shown  at the right of t
 
 ### 4.3 Playbook termination
 
-When the playbook completes the install the terminal window will look like the following. **Note:** If you selected  the GUI option for the KVM host install you will get additional details about accessing the KVM Host via VNC.
+When the playbook completes the install the terminal window will look like the following.
 
   ![Access info](images/access-info.png)
-  <sub><sub>Figure 7. Access info </sub></sub>
+  <sub><sub>Figure 4. Access info </sub></sub>
 
 ## 5. Accessing the cluster
 
@@ -277,12 +277,6 @@ To access your cluster from your local machine setup you need to do the followin
     ```
 
     * Enter your your cluster credentials when prompted
-
-1. For SSH access to the KVM Host enter the following command:
-
-    ```bash
-    ssh -i auth/[your cluster name]-local-id_rsa  kvmadmin@kvmhost.[your cluster name].[your cluster domain]
-    ```
 
 1. For SSH access to your single OpenShift node enter the following command:
 
