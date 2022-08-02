@@ -11,21 +11,6 @@ The Ansible  modules provision the following resources on VMWare:
 
 Running the master playbook to install the OpenShift Single Node cluster can be done with a single command but there are some prerequisites that must be in place before running that command.
 
-## 1. Clone this repo
-
-From a terminal window, clone this Github repo to your local system.
-
-```bash
-git clone https://github.ibm.com/hcbt/sno-on-azure-ansible.git
-```
-
-Go to the **ansible** sub-folder of the cloned repos root folder. **Note:** All subsequent command line instructions assume that you will be in this folder.
-
-```bash
-cd sno-on-vmware-ansible
-cd ansible
-```
-
 ## 1. Setup SNO Installer VMWare VM
 
 It is recommended that you create a Linux VM in VMWare with Ubuntu 20.04 Server as the OS to serve as the SNO installer. Install the following software on the VM. After starting the VM access it via a terminal and install the following:
@@ -253,9 +238,8 @@ Progress is displayed by Ansible via the terminal. The longest task is monitorin
   ![Polling Task](images/polling-script.png)
   <sub><sub>Figure 1. Polling the Assisted Installer</sub></sub>
 
-Login to the Azure portal and browse your Azure resources [here](https://portal.azure.com/#home).
 
-Login to the Assisted Installer portal [here](https://console.redhat.com/openshift/assisted-installer/clusters) to see more granular progress updates:
+Login to the Assisted Installer portal  to see more granular progress updates:
 
 i. Select the corresponding cluster
 
@@ -311,7 +295,7 @@ To access your cluster from your local machine setup you need to do the followin
 As long as you still have the the same *group_var/all* file that you used to install the cluster,  you can remove the cluster and all it's components by running the following command:
 
 ```bash
-ansible-playbook teardown_vmware_host.yml
+NOT YET IMPLEMENTED
 ```
 
 ## Troubleshooting
