@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  gather_facts: true
+  
+  roles:
+    - role: validate_parms
+      when: vars_validated is not defined
+    - role: prepare_sno_install
+    - role: create_sno_vm
+    - role: start_sno_install
+
+  post_tasks:
+    - name: Success message
+      debug:
+        msg: "Your SNO install started successfully !"

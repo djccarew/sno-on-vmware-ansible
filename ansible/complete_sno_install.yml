@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: validate_parms
+      when: vars_validated is not defined
+    - role: complete_sno_install
+
+
+  post_tasks:
+    - name: Generate custom hosts file for SNO cluster
+      template:
+        src: templates/hosts.j2
+        dest: auth/{{ sno_cluster_name }}.hosts
+
+
+    - name: Show access info
+      vars:
+         msg: |
+                The OpenShift SNO cluster is ready !
+
+                Your OpenShift cluster credentials are in the file {{ playbook_dir}}/auth/{{ sno_cluster_name }}-kubeadmin.json
+
+                To access the OpenShift console:
+
+                  1. Add the contents of the file {{ playbook_dir}}/auth/{{ sno_cluster_name }}.hosts to your /etc/hosts file
+
+                  2. You can then access the OpenShift console at the following  URL:
+                     https://console-openshift-console.apps.{{ sno_cluster_name }}.{{ sno_domain_name }}
+
+                To access the cluster via the oc CLI run the following command:
+
+                  oc login api.{{ sno_cluster_name }}.{{ sno_domain_name }}:6443 and login with your credentials
+
+      debug:
+        msg: "{{ msg.split('\n') }}"

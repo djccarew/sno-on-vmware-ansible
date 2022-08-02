@@ -1,0 +1,22 @@
+---
+name_prefix: "CHANGE_NAMEPREFIX"
+sno_domain_name: "CHANGE_DOMAIN"
+sno_cluster_name: "CHANGE_CLUSTERNAME"
+sno_version: "CHANGE_OCP_VERSION"
+sno_dns_ip: "CHANGE SNO VM DNS IP"
+sno_interface: "ens192"
+sno_ip_address: "CHANGE SNO VM IP"
+sno_gateway_ip: "CHANGE SNO VM GATEWAY IP"
+sno_machine_cidr: "CHANGE SNO VM CIDR"
+sno_iso_datastore: "CHANGE SNO VM ISO DATASTORE"
+sno_iso_datastore_path: "CHANGE SNO ISO DATASTORE PATH"
+sno_vm_datastore: "CHANGE SNO VM DISK DATASTORE"
+vcenter_hostname: "CHANGE VCENTER HOSTNAME"
+vcenter_datacenter: "CHANGE VCENTER DATACENTER"
+vcenter_username: "CHANGE VCENTER USERNAME"
+vcenter_password: "CHANGE VCENTER PASSWORD"
+sno_vm_vcpus: 8
+sno_vm_ram_mb: 32768
+sno_vm_disk_size: 120Gi
+sno_mac_address: 00:50:56:b2:da:e4
+sno_guest_id: rhel8_64Guest

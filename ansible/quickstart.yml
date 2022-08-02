@@ -1,0 +1,37 @@
+---
+- name: Start install
+  hosts: localhost
+  tasks:
+    - name: Starting message
+      debug:
+        msg: "Starting end to end install of OpenShift single node cluster on VMware ..."
+
+# - name: Provision cloud resources
+#   import_playbook: provision_kvm_host.yml
+#
+# - name: Install KVM on provisioned VSI
+#   import_playbook: setup_kvm_host.yml
+#
+# - name: Add GUI desktop to VSI if configured
+#   import_playbook: setup_gui_access.yml
+#   when: setup_vsi_gui
+#
+# - name: Add VNC access to GUI desktop if configured
+#   import_playbook: setup_vnc.yml
+#   when: setup_vsi_gui
+#
+# - name: Create Utility SNO VM
+#   import_playbook: create_utility_vm.yml
+
+- name: Prepare SNO install
+  import_playbook: prepare_sno_install.yml
+
+- name: Complete SNO install
+  import_playbook: complete_sno_install.yml
+
+- name: End to end install of SNO on VMWare complete
+  hosts: localhost
+  tasks:
+    - name: Ending message
+      debug:
+        msg: "End to end install of OpenShift single node cluster on VMware complete !"

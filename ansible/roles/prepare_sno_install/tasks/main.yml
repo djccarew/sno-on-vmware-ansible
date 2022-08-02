@@ -1,0 +1,211 @@
+---
+# OCM API Token (refresh_token) for authentication
+# https://console.redhat.com/openshift/token/show
+# - name: Assisted installer token
+#   uri:
+#     url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+#     method: POST
+#     status_code: [200]
+#     body_format: form-urlencoded
+#     body:
+#       grant_type: refresh_token
+#       client_id: cloud-services
+#       refresh_token: "{{ lookup('file','auth/token.txt') }}"
+#     return_content: yes
+#
+#   register: refresh_token_response
+#
+# - name: Parse response
+#   set_fact:
+#     refresh_token: "{{ refresh_token_response.json.access_token }}"
+
+- name: Escaped pull secret
+  set_fact:
+    escaped_pull_secret: "{{ lookup('file','auth/pull-secret.txt') | replace('\"', '\\\"') }}"
+
+- name: Get clusters
+  uri:
+    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+    method: GET
+    status_code: [200]
+    # headers:
+    #   Authorization: "{{ 'Bearer ' + refresh_token }}"
+    return_content: yes
+  register: get_clusters_response
+
+- name: Get cluster names
+  set_fact:
+    cluster_names: "{{ get_clusters_response.json | map(attribute='name') | list }}"
+
+- name: Cluster names  for debugging
+  debug:
+    var: cluster_names
+
+- name: Cluster does not exist
+  block:
+
+    - name: Clean up any old marker files
+      file:
+        path: "auth/.{{ sno_cluster_name }}-install-started"
+        state: absent
+
+    - name: Generate SSH keypair for accessing SNO VM
+      openssh_keypair:
+        mode: 0400
+        size: 4096
+        state: present
+        path: "auth/{{ name_prefix }}-remote-id_rsa"
+  
+        
+
+    - name: Register a cluster
+      uri:
+        url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+        method: POST
+        body_format: json
+        status_code: [201]
+        headers:
+          Content-Type: "application/json"
+          # Authorization: "{{ 'Bearer ' + refresh_token }}"
+        body: |
+          {
+            "name": "{{ sno_cluster_name }}",
+            "high_availability_mode": "None",
+            "openshift_version": "{{ sno_version }}",
+            "pull_secret": "{{ escaped_pull_secret }}",
+            "base_dns_domain": "{{ sno_domain_name }}",
+            "vip_dhcp_allocation": false,
+            "ssh_public_key": "{{ lookup('file', 'auth/' + name_prefix + '-remote-id_rsa.pub') }}",
+            "machine_networks": [
+                {
+                    "cidr": "{{ sno_machine_cidr  }}"
+                }
+             ]
+           }
+
+        return_content: yes
+      register: register_cluster_response
+
+    - name: Parse response
+      set_fact:
+        cluster_id: "{{ register_cluster_response.json.id }}"
+
+    - name: Cluster Id
+      debug:
+        var: cluster_id
+
+  when: "sno_cluster_name not in cluster_names"
+
+- name: Cluster already exists
+  block:
+    - name: Get existing cluster info
+      set_fact:
+        existing_cluster: "{{ get_clusters_response.json |selectattr('name','eq',sno_cluster_name) | first }}"
+
+    - name: Existing cluster id
+      set_fact:
+        cluster_id: "{{ existing_cluster.id }}"
+
+  when: "sno_cluster_name in cluster_names"
+
+- name: Get infra-envs
+  uri:
+    url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
+    method: GET
+    status_code: [200]
+    # headers:
+    #   Authorization: "{{ 'Bearer ' + refresh_token }}"
+    return_content: yes
+  register: get_infraenvs_response
+
+- name: Get infrenv names
+  set_fact:
+    infraenv_names: "{{ get_infraenvs_response.json | map(attribute='name') | list }}"
+
+- name: Infra-envs names for debugging
+  debug:
+    var: infraenv_names
+
+- name: Infrenv does not exist
+  block:
+    - name: Setup NMSTATE yaml for static networking
+      template:
+        src: nmstate.yml.j2
+        dest: static-networking/nmstate.txt
+
+    - name: Set var to nmstate yaml
+      set_fact:
+        nmstate_yaml1: "{{ lookup('file', 'static-networking/nmstate.txt') }}"
+
+    - name: Register an infraenv
+      uri:
+        url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
+        method: POST
+        status_code: [201]
+        body_format: json
+        # headers:
+        #   Authorization:  "{{ 'Bearer ' + refresh_token }}"
+        body: |
+            {
+              "name": "{{ sno_infraenv_name }}",
+              "cluster_id": "{{ cluster_id }}",
+              "openshift_version": "4.10",
+              "pull_secret": "{{ escaped_pull_secret  }}",
+              "image_type": "full-iso",
+              "static_network_config": [
+                {
+                 "network_yaml": "{{ nmstate_yaml1 }}",
+                 "mac_interface_map":[
+                    {
+                      "mac_address": "{{ sno_mac_address }}",
+                      "logical_nic_name": "{{ sno_interface }}"
+                    }
+                 ]
+                }
+              ]
+            }
+      register: register_infraenv_response
+
+    - name: Parse response
+      set_fact:
+        infraenv_id: "{{ register_infraenv_response.json.id }}"
+
+    - name: Infraenv Id
+      debug:
+        var: infraenv_id
+
+  when:  "sno_infraenv_name not in infraenv_names"
+
+- name: Infraenv does exist
+  block:
+
+    - name: Get existing infraenv info
+      set_fact:
+        existing_infraenv: "{{ get_infraenvs_response.json |selectattr('name','eq',sno_infraenv_name) | first }}"
+
+    - name: Existing infraenv id
+      set_fact:
+         infraenv_id: "{{ existing_infraenv.id }}"
+
+  when: "sno_infraenv_name in infraenv_names"
+
+- name: Get InfraEnv Image Download URL
+  uri:
+    url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}"
+    method: GET
+    # headers:
+    #   Authorization:  "{{ 'Bearer ' + refresh_token }}"
+    return_content: yes
+  register: image_url_response
+
+- name: Save download image URL as fact
+  set_fact:
+    download_url: "{{ image_url_response.json.download_url }}"
+
+- name: Image_url_response.json for  debugging
+  debug:
+    var: image_url_response.json
+
+- name: Download URL for debugging
+  debug:
+    var: download_url

@@ -1,0 +1,134 @@
+---
+- name: Verify vcenter_hostname parameter
+  assert:
+    that: 'vcenter_hostname is defined and vcenter_hostname is string and vcenter_hostname is  regex("^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$")'
+    fail_msg: "variable vcenter_hostname must be defined and be in the format of a hostname "
+
+- name: Verify vcenter_username parameter
+  assert:
+    that: 'vcenter_username is defined and vcenter_username is string'
+    fail_msg: "variable vcenter_username must be defined and must be a string"
+
+- name: Verify vcenter_password parameter
+  assert:
+    that: 'vcenter_password is defined and vcenter_password is string'
+    fail_msg: "variable vcenter_password must be defined and must be a string"
+
+- name: Verify vcenter_datacenter parameter
+  assert:
+    that: 'vcenter_datacenter is defined and vcenter_datacenter is string'
+    fail_msg: "variable vcenter_datacenter must be defined and must be a string"
+
+
+- name: Validate OpenShift version
+  assert:
+    that: "sno_version in ['4.8','4.9','4.10']"
+    fail_msg: "variable sno_version must be one of 4.8, 4.9 or 4.10"
+  when: sno_version is defined
+
+- name: Verify sno_domain_name parameter
+  assert:
+    that: 'sno_domain_name is defined and sno_domain_name is regex("^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$")'
+    fail_msg: "variable sno_domain_name muste be defined and must be in the format of a domain"
+
+- name: Verify sno_dns_ip parameter
+  assert:
+    that: 'sno_dns_ip is defined and sno_dns_ip is string and sno_dns_ip is regex("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")'
+    fail_msg: "variable sno_dns_ip must be defined and be in the format of an IP address"
+
+- name: Verify sno_gateway_ip parameter
+  assert:
+    that: 'sno_gateway_ip is defined and sno_gateway_ip is string and sno_gateway_ip is regex("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")'
+    fail_msg: "variable sno_gateway_ip must be defined and be in the format of an IP address"
+
+- name: Verify sno_ip_address parameter
+  assert:
+    that: 'sno_ip_address is defined and sno_ip_address is string and sno_ip_address is regex("^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")'
+    fail_msg: "variable sno_ip_address must be defined and be in the format of an IP address"
+
+- name: Verify sno_interface parameter
+  assert:
+    that: 'sno_interface is defined and sno_interface is regex("^[a-z]+[a-z,0-9]+[0-9]+$")'
+    fail_msg: "variable sno_prefix_length must be defined and be in the format of a network interface"
+
+- name: Verify sno_vm_vcpus parameter
+  assert:
+    that:
+     -  "sno_vm_vcpus is defined"
+     -  "(sno_vm_vcpus | type_debug) == 'int' "
+    fail_msg: "variable sno_vm_vcpus must be defined and be an integer"
+
+- name: Verify sno_vm_ram_mb parameter
+  assert:
+    that: 
+     - "sno_vm_ram_mb is defined" 
+     - "(sno_vm_ram_mb | type_debug) == 'int' "
+    fail_msg: "variable sno_vm_ram_mb must be defined and be an integer"
+
+- name: Verify sno_mac_address parameter
+  assert:
+    that: 'sno_mac_address is defined and sno_mac_address is regex("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")'
+    fail_msg: "variable sno_mac_address must be defined and be in the format of a MAC address"
+
+- name: Verify sno_machine_cidr parameter
+  assert:
+    that: 'sno_machine_cidr is defined and sno_machine_cidr is regex("^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$")'
+    fail_msg: "variable sno_machine_cidr must be defined and be in the format of a MAC address"
+
+- name: Verify sno_vm_disk_size parameter
+  assert:
+    that: 'sno_vm_disk_size is defined and sno_vm_disk_size is regex("^[0-9]{3,4}Gi$")'
+    fail_msg: "variable sno_vm_disk_size must be defined and be in the format of a disk size (nnnGi)"
+
+- name: "Verify that remaining variables are defined and have valid format"
+  assert:
+    that: "{{ item }} is defined and {{ item }} is string and {{ item }} is regex('^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]$')"
+    fail_msg: "variable {{ item }} is not defined or does not start with an alphabetic char, contains only  alphanumeric chars or dashes and ends with an alphanumeric char"
+  with_items:
+    - name_prefix
+    - sno_cluster_name
+    - sno_iso_datastore
+    - sno_iso_datastore_path
+    - sno_vm_datastore
+    - sno_guest_id
+
+- name: Look for pull secret file
+  stat:
+    path: "auth/pull-secret.txt"
+  register: pull_secret_file
+
+- name: Verify that pull secret file exists
+  assert:
+    that: pull_secret_file.stat.exists
+    fail_msg: "Pull secret  file auth/pull-secret.txt is required for this playbook"
+    success_msg: "Required pull secret file exists"
+
+- name: Lookup SNO hostname in DNS
+  set_fact:
+    sno_ip_from_dns: "{{ lookup('dig', sno_hostname + '.') }}"
+
+- name: Validate SNO hostname from DNS
+  assert:
+    that: sno_ip_address == sno_ip_from_dns
+    fail_msg: "DNS lookup for {{ sno_hostname }} should return {{ sno_ip_address }} not {{ sno_ip_from_dns }}"
+
+- name: Reverse lookup SNO IP in DNS
+  set_fact:
+    sno_hostname_from_reverse_dns: "{{ lookup('dig', sno_ip_address + '/PTR')  }}"
+
+- name: Validate reverse DNS lookup
+  assert:
+     that: sno_hostname + '.' == sno_hostname_from_reverse_dns
+     fail_msg: "Reverse DNS lookup for {{ sno_ip_address }} should return {{ sno_hostname }}. not {{ sno_hostname_from_reverse_dns }}"
+
+- name: Validate Assisted Installer endpoint 
+  uri:
+    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+    method: GET
+    status_code: [200]
+    return_content: no
+    
+- name: Save validation status as fact
+  set_fact:
+    cacheable: true
+    vars_validated: true

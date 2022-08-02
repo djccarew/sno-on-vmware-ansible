@@ -1,0 +1,110 @@
+---
+- name: Get existing VMs
+  vmware_vm_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    vm_type: vm
+    validate_certs: no
+
+  register: existing_vms
+  changed_when: no
+
+- name: Save VM names as list
+  set_fact:
+    vm_names: "{{ vm_names | default([]) + [item.guest_name] }}"
+  loop: "{{ existing_vms.virtual_machines }}"
+
+- name: Create SNO VM if it isn't there already
+  block:
+    - name: Wait up to 10 minutes for ISO download url to be ready 
+      uri:
+        url: "{{ download_url }}"
+        method: GET
+        status_code: [200,503]
+     #   headers:
+     #     Authorization:  "{{ 'Bearer ' + refresh_token }}"
+        return_content: no
+      register: image_service_response
+      until: image_service_response.status == 200
+      retries: 60
+      delay: 10
+
+    - name: Get ISO
+      get_url:
+        url: "{{ download_url }}"
+        dest: "/tmp//discovery_{{ sno_cluster_name }}.iso"
+        mode:  0644
+
+    - name: Copy ISO to datastore
+      vsphere_copy:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        src: "/tmp//discovery_{{ sno_cluster_name }}.iso"
+        datacenter: "{{ vcenter_datacenter }}"
+        datastore: "{{ sno_iso_datastore }}"
+        path: "{{ sno_iso_datastore_path }}/discovery_{{ sno_cluster_name }}.iso"
+        validate_certs: no
+      delegate_to: localhost
+
+    - name: Define SNO VM
+      vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ sno_vm_name }}"
+        state: poweredon
+        folder: "/{{ vcenter_datacenter }}/vm"
+        customvalues:
+          - key: "disk.enableUUID"
+            value: "true"
+        hardware:
+          memory_mb: 32768
+          num_cpus: 8
+        cdrom:
+          - controller_number: 0
+            unit_number: 0
+            state: present
+            type: iso
+            iso_path: "[{{ sno_iso_datastore }}] {{ sno_iso_datastore_path }}/discovery_{{ sno_cluster_name }}.iso"
+        guest_id: "{{ sno_guest_id }}"
+        datastore: "{{ sno_vm_datastore }}"
+        disk:
+          - size_gb: 120
+            controller_type: lsilogic
+            controller_number: 0
+            unit_number: 0
+        networks:
+          - name: VM Network
+            device_type: vmxnet3
+            mac: "{{ sno_mac_address }}"
+
+
+  when:  "sno_vm_name not in vm_names"
+
+- name: Ensure VM is started
+  vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    name: "{{ sno_vm_name }}"
+    schema: "vsphere"
+    properties: ["overallStatus", "runtime.powerState"]
+    validate_certs: no
+  register: vm_start_results
+  until: "vm_start_results.instance.overallStatus == 'green' and  vm_start_results.instance.runtime.powerState == 'poweredOn'"
+  retries: 30
+  delay: 10
+
+- name: Wait for VM to become reachable over SSH
+  wait_for:
+    host: "{{ sno_ip_address }}"
+    port: 22
+    delay: 20
+    timeout: 360
+    sleep: 10
+    state: started

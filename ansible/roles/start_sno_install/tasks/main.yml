@@ -1,0 +1,75 @@
+---
+- name: Show cluster_id and infraenv_id for debugging
+  debug:
+    msg: "{{ item.name }} is {{ item.value }}"
+  with_items:
+    - name: "Cluster Id"
+      value: "{{ cluster_id }}"
+    - name: "Infraenv Id"
+      value: "{{ infraenv_id }}"
+
+- name: Check if marker file already exists and install start API call if it does
+  stat:
+    path: "auth/.{{ sno_cluster_name }}-install-started"
+  register: install_started
+
+- name: Wait 5 mins for host to be ready for install
+  block:
+    - name: Get host status
+      uri:
+        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts"
+        method: GET
+        status_code: [200,409]
+#        headers:
+#          Authorization:  "{{ 'Bearer ' + refresh_token }}"
+        return_content: yes
+      register: host_response
+      until: host_response.status == 200 and  host_response.json is defined and (host_response.json | length > 0) and  host_response.json[0].status_info == "Host is ready to be installed"
+      retries: 30
+      delay: 10
+
+    - name: Show host status
+      debug:
+        msg: "Host status is {{ host_response.json[0].status_info | default('Host status undefined') }}"
+      when: host_response.status == 200 and host_response.json is defined and (host_response.json | length > 0)
+
+    - name: Set hostname of single node
+      uri:
+        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts/{{ host_response.json[0].id }}"
+        method: PATCH
+        body_format: json
+        status_code: [201]
+        headers:
+          Content-Type: "application/json"
+#          Authorization: "{{ 'Bearer ' + refresh_token }}"
+        body: |
+          {
+            "host_name": "sno.{{ sno_cluster_name }}.{{ sno_domain_name }}"
+          }
+
+        return_content: yes
+      register: patch_hostname_response
+
+  when: not install_started.stat.exists
+
+
+- name: Start install
+  block:
+    - name: Call Assisted Installer API
+      uri:
+        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ cluster_id }}/actions/install"
+        method: POST
+#        headers:
+#          Authorization:  "{{ 'Bearer ' + refresh_token }}"
+        return_content: yes
+        status_code: [202,400]
+      register: start_response
+
+    - name: Create marker file
+      lineinfile:
+        path: "auth/.{{ sno_cluster_name }}-install-started"
+        line: "not empty"
+        state: present
+        create: yes
+
+  when: not install_started.stat.exists

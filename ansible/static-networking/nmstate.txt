@@ -1,0 +1,1 @@
+dns-resolver:\n  config:\n    server:\n    - 10.38.96.155\ninterfaces:\n- name: ens192\n  ipv4:\n    address:\n    - ip: 10.38.96.158\n      prefix-length: 26\n    dhcp: false\n    enabled: true\n  state: up\n  type: ethernet\nroutes:\n  config:\n  - destination: 0.0.0.0/0\n    next-hop-address: 10.38.96.155\n    next-hop-interface: ens192\n    table-id: 254
