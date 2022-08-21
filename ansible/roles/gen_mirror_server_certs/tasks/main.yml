@@ -62,3 +62,14 @@
   register: mirror_crt
   when: not mirror_crt_file.stat.exists
 
+- name: Copy CA to local certs
+  copy:
+    src: "certs/mirror/{{ sno_domain_name }}.crt"
+    dest: "/usr/local/share/ca-certificates/{{ sno_domain_name }}.crt"
+  delegate_to: localhost
+
+- name: Add CA locally
+  shell:
+    cmd: update-ca-certificates
+  become: yes
+
