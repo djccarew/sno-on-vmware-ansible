@@ -135,13 +135,28 @@
      that: sno_hostname + '.' == sno_hostname_from_reverse_dns
      fail_msg: "Reverse DNS lookup for {{ sno_ip_address }} should return {{ sno_hostname }}. not {{ sno_hostname_from_reverse_dns }}"
 
-- name: Validate Assisted Installer endpoint 
-  uri:
-    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
-    method: GET
-    status_code: [200]
-    return_content: no
-    
+# - name: Validate Assisted Installer endpoint 
+#   uri:
+#     url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+#     method: GET
+#     status_code: [200]
+#     return_content: no
+
+- name: Verify that airgapped flag is defined
+  assert: 
+    that: sno_install_is_airgapped is defined 
+    fail_msg: "The variable sno_install_is_airgapped must be defined"
+
+- name: Verify that airgapped vars are defined
+  assert:
+    that: "{{ item }} is defined and {{ item }} is string "
+    fail_msg: "variable {{ item }} is not defined"
+  with_items:
+    - ai_image_tag
+    - sno_operator_list
+    - mirror_registry_password
+  when: sno_install_is_airgapped
+  
 - name: Save validation status as fact
   set_fact:
     cacheable: true
