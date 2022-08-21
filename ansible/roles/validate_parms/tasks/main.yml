@@ -73,12 +73,27 @@
 - name: Verify sno_machine_cidr parameter
   assert:
     that: 'sno_machine_cidr is defined and sno_machine_cidr is regex("^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$")'
-    fail_msg: "variable sno_machine_cidr must be defined and be in the format of a MAC address"
+    fail_msg: "variable sno_machine_cidr must be defined and be in the format of a CIDR"
 
-- name: Verify sno_vm_disk_size parameter
+- name: Verify sno_iso_datastore_path parameter
   assert:
-    that: 'sno_vm_disk_size is defined and sno_vm_disk_size is regex("^[0-9]{3,4}Gi$")'
-    fail_msg: "variable sno_vm_disk_size must be defined and be in the format of a disk size (nnnGi)"
+    that: 'sno_iso_datastore_path is defined and sno_iso_datastore_path is regex("^([a-z]:)*(\/*([a-z0-9]+\/)*([a-z0-9]+))")'
+    fail_msg: "variable sno_iso_datastore_path must be defined and be in the format of a datastore path"
+
+- name: Verify sno_vm_disk_size_gb parameter
+  assert:
+    that: 
+      - "sno_vm_disk_size_gb is defined"
+      - "(sno_vm_disk_size_gb | type_debug) == 'int' "
+    fail_msg: "variable sno_vm_disk_size_gb must be defined and be an integer)"
+
+- name: Verify sno_vm_data_disk_size_gb parameter
+  assert:
+    that: 
+      - "sno_vm_data_disk_size_gb is defined"
+      - "(sno_vm_data_disk_size_gb | type_debug) == 'int' "
+    fail_msg: "variable sno_vm_data_disk_size_gb must be defined and be an integer)"
+
 
 - name: "Verify that remaining variables are defined and have valid format"
   assert:
@@ -88,7 +103,6 @@
     - name_prefix
     - sno_cluster_name
     - sno_iso_datastore
-    - sno_iso_datastore_path
     - sno_vm_datastore
     - sno_guest_id
 

@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: true
+
+  collections:
+    - community.kubernetes
+
+  roles:
+    - role: validate_parms
+      when: vars_validated is not defined
+    - role: setup_odf_lvm
+
+
+  post_tasks:
+    - name: Success message
+      debug:
+        msg: "ODF LVM successfully configured !"
+
+   

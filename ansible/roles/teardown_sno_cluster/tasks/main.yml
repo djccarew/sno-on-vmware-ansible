@@ -1,0 +1,163 @@
+---
+- name: Get existing VMs
+  vmware_vm_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    vm_type: vm
+    validate_certs: no
+
+  register: existing_vms
+  changed_when: no
+
+- name: Save VM names as list
+  set_fact:
+    vm_names: "{{ vm_names | default([]) + [item.guest_name] }}"
+  loop: "{{ existing_vms.virtual_machines }}"
+
+- name: Remove SNO VM if it is there already
+  block:
+    - name: Delete SNO VM
+      vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ sno_vm_name }}"
+        state: absent
+        force: yes
+
+    - name: Delete ISO from datastore
+      vsphere_file:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        datastore: "{{ sno_iso_datastore }}"
+        path: "{{ sno_iso_datastore_path }}/discovery_{{ sno_cluster_name }}.iso"
+        validate_certs: no
+        state: absent
+      delegate_to: localhost
+
+  when:  "sno_vm_name in vm_names"
+
+- name: Remove ssh key pair
+  openssh_keypair:
+    path: "auth/{{ name_prefix }}-remote-id_rsa"
+    state: absent
+    
+- name: Remove Cluster creds kubeadmin
+  file:
+    path: "auth/{{ sno_cluster_name }}-kubeadmin.json"
+    state: absent
+
+- name: Remove Cluster creds kubeconfig
+  file:
+    path: "auth/{{ sno_cluster_name }}-kubeconfig"
+    state: absent
+
+- name: Remove Cluster hosts file
+  file:
+    path: "auth/{{ sno_cluster_name }}.hosts"
+    state: absent
+
+- name: Remove installer marker file
+  file:
+    path: "auth/.{{ sno_cluster_name }}-install-started"
+    state: absent
+
+
+- name: Get infra-envs
+  uri:
+    url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
+    method: GET
+    status_code: [200]
+    return_content: yes
+  register: get_infraenvs_response
+
+- name: Get infrenv names
+  set_fact:
+    infraenv_names: "{{ get_infraenvs_response.json | map(attribute='name') | list }}"
+
+- name: Infra-envs names for debugging
+  debug:
+    var: infraenv_names
+
+- name: Infraenv does exist
+  block:
+
+    - name: Get existing infraenv info
+      set_fact:
+        existing_infraenv: "{{ get_infraenvs_response.json |selectattr('name','eq',sno_infraenv_name) | first }}"
+
+    - name: Existing infraenv id
+      set_fact:
+         infraenv_id: "{{ existing_infraenv.id }}"
+
+    - name: Get hosts
+      uri:
+        url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts
+        method: GET
+        status_code: [200]
+        return_content: yes
+      register: infraenv_hosts_response
+
+    - name: Get existing infraenv info
+      set_fact:
+        existing_host: "{{ infraenv_hosts_response.json |selectattr('infra_env_id','eq',infraenv_id) | first }}"
+
+
+    - name: Delete host
+      uri:
+        url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts/{{ existing_host.id  }}
+        method: DELETE
+        status_code: [204]
+   
+      when: existing_host is defined and existing_host.id is defined
+
+    - name: Delete infraenv
+      uri:
+        url: https://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}
+        method: DELETE
+        status_code: [204]
+      register: delete_infraenv_response
+
+  when: "sno_infraenv_name in infraenv_names"
+
+- name: Get clusters
+  uri:
+    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+    method: GET
+    status_code: [200]
+    return_content: yes
+  register: get_clusters_response
+
+- name: Get cluster names
+  set_fact:
+    cluster_names: "{{ get_clusters_response.json | map(attribute='name') | list }}"
+
+- name: Cluster names for debugging
+  debug:
+    var: cluster_names
+
+- name: Cluster already exists
+  block:
+    - name: Get existing cluster info
+      set_fact:
+        existing_cluster: "{{ get_clusters_response.json |selectattr('name','eq',sno_cluster_name) | first }}"
+
+    - name: Existing cluster id
+      set_fact:
+        cluster_id: "{{ existing_cluster.id }}"
+
+    - name: Delete cluster
+      uri:
+        url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ cluster_id }}
+        method: DELETE
+        status_code: [204]
+      register: delete_infraenv_response
+
+  when: "sno_cluster_name in cluster_names"
+
+

@@ -1,0 +1,76 @@
+---
+- name: Assisted installer images dir
+  file:
+    path: mirrored-images/ai
+    state: directory
+
+- name: Install images dir
+  file:
+    path: "mirrored-images/{{ sno_release }}/install"
+    state: directory
+    recurse: yes
+
+- name: Operator images dir
+  file:
+    path: "mirrored-images/{{ sno_release }}/olm"
+    state: directory
+    recurse: yes
+
+- name: Mirror assisted installer images to local disk
+  shell: |
+    skopeo copy docker://quay.io/centos7/postgresql-12-centos7:centos7 dir:$(pwd)/postgresql
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-ui 
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer:{{ ai_image_tag }} dir:$(pwd)/assisted-installer 
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-controller:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-controller 
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-agent 
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }} dir:$(pwd)/assisted-service 
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }} dir:$(pwd)/assisted-image-service 
+  args:
+    chdir: mirrored-images/ai
+
+- name: Mirror OpenShift install images to local disk 
+  shell:
+    chdir: mirrored-images
+    cmd: oc adm release mirror -a ../auth/pull-secret.txt --to-dir=$(pwd)/{{ sno_release }}/install quay.io/openshift-release-dev/ocp-release:{{ sno_release }}-x86_64
+
+- name: Log into registry.redhat.io
+  shell:
+    cmd: podman login --username {{ rhreg_username }} --password {{ rhreg_password }} registry.redhat.io
+
+- name: Prune registry 
+  shell:
+    cmd: opm index prune registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} -p {{ sno_operator_list }} -t $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} 
+
+- name>: Delete local  registry if it exists
+  shell: 
+    chdir: mirror-registry
+    cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
+  become: yes
+  ignore_errors: yes
+
+- name: Create temporary local  registry 
+  shell:
+    chdir: mirror-registry
+    cmd: ./mirror_registry install --quayHostname $(hostname) --initUser init initPassword {{ mirror_registry_password }}
+  become: yes
+ 
+
+
+- name: Log into local mirror registry
+  shell:
+    cmd: podman login --username init --password {{ mirror_registry_password }} $(hostname):8443
+
+- name: Push pruned index  to mirror registry 
+  shell:
+    cmd: podman push 
+
+- name: Mirror operator images to local filesystem
+  shell: 
+    cmd: oc mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret.txt
+
+
+- name>: Delete local  registry
+  shell: 
+    chdir: mirror-registry
+    cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
+  become: yes

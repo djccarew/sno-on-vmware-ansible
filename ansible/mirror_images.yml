@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: true
+
+  collections:
+    - community.kubernetes
+
+  roles:
+    - role: validate_parms
+      when: vars_validated is not defined
+    - role: mirror_images_to_local
+
+
+  post_tasks:
+    - name: Success message
+      debug:
+        msg: "Images mirrored to local successfully  !"
+
+   

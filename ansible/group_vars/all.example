@@ -18,5 +18,8 @@ vcenter_password: "CHANGE VCENTER PASSWORD"
 sno_vm_vcpus: 8
 sno_vm_ram_mb: 32768
 sno_vm_disk_size: 120Gi
+sno_vm_data_disk_size: 350Gi
 sno_mac_address: 00:50:56:b2:da:e4
 sno_guest_id: rhel8_64Guest
+sno_install_odflvm: yes
+sno_airgapped: no

@@ -1,35 +1,19 @@
----
-# OCM API Token (refresh_token) for authentication
-# https://console.redhat.com/openshift/token/show
-# - name: Assisted installer token
-#   uri:
-#     url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
-#     method: POST
-#     status_code: [200]
-#     body_format: form-urlencoded
-#     body:
-#       grant_type: refresh_token
-#       client_id: cloud-services
-#       refresh_token: "{{ lookup('file','auth/token.txt') }}"
-#     return_content: yes
-#
-#   register: refresh_token_response
-#
-# - name: Parse response
-#   set_fact:
-#     refresh_token: "{{ refresh_token_response.json.access_token }}"
-
-- name: Escaped pull secret
+---       
+- name: Escaped pull secret for internet connected install
   set_fact:
     escaped_pull_secret: "{{ lookup('file','auth/pull-secret.txt') | replace('\"', '\\\"') }}"
+  when: not sno_install_is_airgapped 
+
+- name: Escaped pull secret for mirror registry
+  set_fact:
+    escaped_pull_secret: "{{ lookup('file','auth/pull-secret-airgapped.txt') | replace('\"', '\\\"') }}"
+  when: sno_install_is_airgapped 
 
 - name: Get clusters
   uri:
     url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
     method: GET
     status_code: [200]
-    # headers:
-    #   Authorization: "{{ 'Bearer ' + refresh_token }}"
     return_content: yes
   register: get_clusters_response
 
@@ -66,7 +50,6 @@
         status_code: [201]
         headers:
           Content-Type: "application/json"
-          # Authorization: "{{ 'Bearer ' + refresh_token }}"
         body: |
           {
             "name": "{{ sno_cluster_name }}",
@@ -76,6 +59,15 @@
             "base_dns_domain": "{{ sno_domain_name }}",
             "vip_dhcp_allocation": false,
             "ssh_public_key": "{{ lookup('file', 'auth/' + name_prefix + '-remote-id_rsa.pub') }}",
+            "platform": {
+              "vsphere": {
+                "vcenter": "{{ vcenter_hostname }}",
+                "username": "{{ vcenter_username }}",
+                "password": "{{ vcenter_password }}"",
+                "datacenter": "{{ vcenter_datacenter }}",
+                "defaultDatastore": "{{ sno_vm_datastore }}"
+            },
+  
             "machine_networks": [
                 {
                     "cidr": "{{ sno_machine_cidr  }}"
@@ -113,8 +105,7 @@
     url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
     method: GET
     status_code: [200]
-    # headers:
-    #   Authorization: "{{ 'Bearer ' + refresh_token }}"
+   
     return_content: yes
   register: get_infraenvs_response
 
@@ -128,6 +119,18 @@
 
 - name: Infrenv does not exist
   block:
+    - name: Get network prefix from CIDR
+      shell: "echo '{{ sno_machine_cidr }}' | cut -d'/' -f2"
+      register: cidr_var
+
+    - name: Debug CIDR prefix
+      debug:
+        msg: "CIDR prefix is **{{ cidr_var.stdout_lines[0] }}***"
+    
+    - name: Save CIDR prefix length
+      set_fact:
+        sno_prefix_length: "{{ cidr_var.stdout_lines[0] }}"
+
     - name: Setup NMSTATE yaml for static networking
       template:
         src: nmstate.yml.j2
@@ -143,8 +146,7 @@
         method: POST
         status_code: [201]
         body_format: json
-        # headers:
-        #   Authorization:  "{{ 'Bearer ' + refresh_token }}"
+     
         body: |
             {
               "name": "{{ sno_infraenv_name }}",

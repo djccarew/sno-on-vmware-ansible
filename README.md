@@ -197,9 +197,17 @@ ii. Edit the file  *ansible/group_vars/all* replacing all the values set to `"**
 | vcenter_username | String | vCenter username | Yes | None |
 | vcenter_password | String | vCenter password | Yes | None |
 
+### 3.3 DNS requirements
 
+The following entries need to be added to the DNS server used by the VMWare network. These DNS entries are based on the cluster name, SNO VM IP address and SNO VM domain name parameters specified in the  previous section.
 
-### 3.3 Validate the parameters
+| Hostname | IP | Reverse lookup ? | Description | 
+| --- | --- | --- | --- | --- |
+| sno.<sno_cluster_name>.<sno_domain_name> | <sno_ip_address> | Yes | FQDN of the SNO Cluster VM. e.g. If your `sno_cluster_name` is `ocp410` and your `sno_domain_name` is `mycompany.com` then the FQDN should be `sno.ocp410.mycompany.com` |
+| api.<sno_cluster_name>.<sno_domain_name> | <sno_ip_address> | Yes | FQDN of the cluster api server. e.g. If your `sno_cluster_name` is `ocp410` and your `sno.domain.name` is `mycompany.com` then the FQDN should be `api.ocp410.mycompany.com` |
+| *.apps.<sno_cluster_name>.<sno_domain_name> | <sno_ip_address> | No | Wildcard DNS entry for SNO Cluster Vapplications. e.g. If your `sno_cluster_name` is `ocp410` and your `sno_domain_name` is `mycompany.com` then the wildcrad DNS entry should be `*.apps.ocp410.mycompany.com` |
+
+### 3.4 Validate the parameters
 
 Run the following playbook to validate the parameters
 

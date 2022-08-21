@@ -1,0 +1,57 @@
+---
+- name: Look for kubeconfig file
+  stat:
+    path: auth/{{ sno_cluster_name }}-kubeconfig
+  register: kubeconfig_file
+
+- name: Verify that kubeconfig file exists
+  assert:
+    that:  kubeconfig_file.stat.exists
+    fail_msg: "kubeconfig  file auth/{{ sno_cluster_name }}-kubeconfig is required for this playbook"
+    success_msg: "Required kubeconfig file exists"
+
+- name: Setup for disconnected install
+  block:
+    - name: Get manifest dir
+      find: 
+        file_type: directory
+        paths: "mirrored-images/{{ sno_release }}/olm"
+        patterns: "manifests-local-index-*"
+        recurse: no
+      register: manifest_dirs
+
+    - name: Save as var
+      set_fact:
+        manifest_dir: "{{ manifest_dirs.files[0].path }}"
+
+    - name: Add Catalog source and image context source policy
+      k8s:
+        state: present
+        src: "{{ item }}"
+        validate_certs: no
+        kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+      with_items:
+        - "{{ manifest_dir }}/catalogSource.yaml"
+        - "{{ manifest_dir }}/imageContextSourcePolicy.yaml"
+
+  when:  sno_install_is_airgapped 
+
+- name: "Install ODF LVM Operator"
+  k8s:
+    state: present
+    src: "{{ item }}"
+    validate_certs: no
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+  with_items:
+    - "k8s/{{ sno_version }}/odflvm-namespace.yml"
+    - "k8s/{{ sno_version }}/odflvm-operatorgroup.yml"
+    - "k8s/{{ sno_version }}/odflvm-subscription.yml"
+
+
+- name: "Create  LVMCluster instance"
+  k8s:
+    state: present
+    src: "k8s/{{ sno_version }}/odflvm-lvmcluster.yml"
+    validate_certs: no
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+  

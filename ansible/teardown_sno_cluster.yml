@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  gather_facts: true
+
+  roles:
+    - role: validate_parms
+      when: vars_validated is not defined
+    - role: teardown_sno_cluster
+    

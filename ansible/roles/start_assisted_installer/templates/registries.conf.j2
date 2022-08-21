@@ -1,0 +1,17 @@
+unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
+
+[[registry]]
+prefix = ""
+location = "quay.io/openshift-release-dev/ocp-release"
+mirror-by-digest-only = false
+
+[[registry.mirror]]
+location = "snoutil.{{ sno_domain_name }}:8443/ocp/openshift4"
+
+[[registry]]
+prefix = ""
+location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
+mirror-by-digest-only = false
+
+[[registry.mirror]]
+location = "snoutil.{{ sno_domain_name }}:8443/ocp/openshift4"

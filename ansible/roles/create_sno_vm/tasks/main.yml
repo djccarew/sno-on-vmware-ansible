@@ -62,8 +62,8 @@
           - key: "disk.enableUUID"
             value: "true"
         hardware:
-          memory_mb: 32768
-          num_cpus: 8
+          memory_mb: "{{ sno_vm_ram_mb }}"
+          num_cpus: "{{ sno_vm_vcpus }}"
         cdrom:
           - controller_number: 0
             unit_number: 0
@@ -73,10 +73,14 @@
         guest_id: "{{ sno_guest_id }}"
         datastore: "{{ sno_vm_datastore }}"
         disk:
-          - size_gb: 120
+          - size_gb: "{{ sno_vm_disk_size_gb }}"
             controller_type: lsilogic
             controller_number: 0
             unit_number: 0
+          - size_gb: "{{ sno_vm_data_disk_size_gb }}"
+            controller_type: lsilogic
+            controller_number: 0
+            unit_number: 1
         networks:
           - name: VM Network
             device_type: vmxnet3
