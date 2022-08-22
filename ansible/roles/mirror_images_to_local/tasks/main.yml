@@ -59,7 +59,6 @@
   debug:
     var: create_local_registry.stdout_lines
  
-
 - name: Log into local mirror registry
   shell:
     cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
@@ -70,9 +69,8 @@
 
 - name: Local reg credentials
   set_fact:
-    local_reg_creds: "init:{{ mirror_registry_password }}"
+    local_reg_creds: "{{ 'init:' + mirror_registry_password }}"
     encoded_reg_creds: "{{ local_reg_creds | b64encode }}"
-
     
 - name: Add  local credentials to pull secret
   shell:
@@ -83,7 +81,7 @@
 
 - name: Mirror operator images to local filesystem
   shell: 
-    cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret.txt
+    cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret-combined.json
 
 
 - name: Delete local  registry
