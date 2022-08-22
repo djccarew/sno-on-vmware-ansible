@@ -41,6 +41,9 @@
   shell: |
      podman rmi registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
      podman rmi $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
+     rm -fr 
+  args:
+    chdir: 
   ignore_errors: yes
  
 - name: Prune registry 
@@ -76,6 +79,10 @@
 - name: Push pruned index to mirror registry 
   shell:
     cmd: podman push $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false
+  retries: 3
+  delay: 8
+  register: push_index
+  until: push_index is not failed
 
 
 - name: Local reg credentials
