@@ -40,7 +40,7 @@
 - name: Clean up any cached versions of operator index and pruned index 
   shell: |
      podman rmi registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
-     podman rmi $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
+     podman rmi local/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
      rm -fr index_tmp_* > /dev/null 2>&1
   args:
     chdir: 
