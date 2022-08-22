@@ -37,10 +37,18 @@
   shell:
     cmd: podman login --username {{ rhreg_username }} --password {{ rhreg_password }} registry.redhat.io
 
-- name: Clean up any cached versions of operator index and pruned index 
+- name: Clean up pruned image from previous run
+  podman_image:
+    name: "local/redhat-operator-index:v{{ sno_version }}"
+    state: absent
+
+- name: Clean up operator index image from previous run
+  podman_image:
+    name: "registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }}"
+    state: absent
+
+- name: Clean up work files from previous run
   shell: |
-     podman rmi registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
-     podman rmi local/redhat-operator-index:v{{ sno_version }} > /dev/null 2>&1
      rm -fr index_tmp_* > /dev/null 2>&1
   args:
     chdir: 
