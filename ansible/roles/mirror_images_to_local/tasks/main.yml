@@ -70,7 +70,7 @@
 
 - name: Mirror operator images to local filesystem
   shell: 
-    cmd: oc mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret.txt
+    cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret.txt
 
 
 - name: Delete local  registry
