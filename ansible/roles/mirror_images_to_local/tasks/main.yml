@@ -51,7 +51,7 @@
 - name: Create temporary local  registry 
   shell:
     chdir: mirror-registry
-    cmd: ./mirror-registry install --quayHostname $(hostname) --initUser init initPassword "{{ mirror_registry_password }}"
+    cmd: ./mirror-registry install --quayHostname $(hostname) --initUser init --initPassword "{{ mirror_registry_password }}"
   become: yes
   register: create_local_registry
 
