@@ -45,7 +45,7 @@
  
 - name: Prune registry 
   shell:
-    cmd: opm index prune -f  -p {{ sno_operator_list }} -t $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} 
+    cmd: opm index prune -f registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} -p {{ sno_operator_list }} -t $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} 
 
 - name: Delete local  registry if it exists
   shell: 
