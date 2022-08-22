@@ -68,22 +68,13 @@
   debug:
     var: create_local_registry.stdout_lines
  
-- name: Log into local mirror registry
-  shell:
-    cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
+# - name: Log into local mirror registry
+#   shell:
+#     cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
     
-- name: Pause for 5 seconds after login
-  pause:
-    seconds: 5
-
-- name: Push pruned index to mirror registry 
-  shell:
-    cmd: podman push $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false
-  become: yes
-  retries: 3
-  delay: 8
-  register: push_index
-  until: push_index is not failed
+# - name: Pause for 5 seconds after login
+#   pause:
+#     seconds: 5
 
 
 - name: Local reg credentials
@@ -100,6 +91,9 @@
     creates: auth/pull-secret-combined.json
     cmd: cat pull-secret.txt | jq   ".auths += {\"$(hostname):8443\":{\"auth\":\"{{ encoded_reg_creds }}\"}}" > pull-secret-combined.json
 
+- name: Push pruned index to mirror registry 
+  shell:
+    cmd: podman push $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false --authfile=auth/pull-secret-combined.json
 
 - name: Mirror operator images to local filesystem
   shell: 
