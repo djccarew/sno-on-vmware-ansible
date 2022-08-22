@@ -51,13 +51,18 @@
 - name: Create temporary local  registry 
   shell:
     chdir: mirror-registry
-    cmd: ./mirror-registry install --quayHostname $(hostname) --initUser init initPassword {{ mirror_registry_password }}
+    cmd: ./mirror-registry install --quayHostname $(hostname) --initUser init initPassword "{{ mirror_registry_password }}""
   become: yes
+  register: create_local_registry
+
+- name: Debug output from registry create task
+  debug:
+    var: create_local_registry.stdout_lines
  
 
 - name: Log into local mirror registry
   shell:
-    cmd: podman login --username init --password {{ mirror_registry_password }} $(hostname):8443 --tls-verify=false
+    cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
 
 - name: Push pruned index  to mirror registry 
   shell:
