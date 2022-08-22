@@ -62,16 +62,22 @@
 - name: Log into local mirror registry
   shell:
     cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
+    
+- name: Pause for 10 seconds after login
+  pause:
+    seconds: 10
 
 - name: Push pruned index  to mirror registry 
   shell:
     cmd: podman push $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false
 
+
 - name: Local reg credentials
   set_fact:
     local_reg_creds: "{{ 'init:' + mirror_registry_password }}"
     encoded_reg_creds: "{{ local_reg_creds | b64encode }}"
-    
+
+
 - name: Add  local credentials to pull secret
   shell:
     chdir: auth
