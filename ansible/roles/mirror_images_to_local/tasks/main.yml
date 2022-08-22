@@ -39,9 +39,9 @@
 
 - name: Prune registry 
   shell:
-    cmd: opm index prune registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} -p {{ sno_operator_list }} -t $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} 
+    cmd: opm index prune -f registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }} -p {{ sno_operator_list }} -t $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} 
 
-- name>: Delete local  registry if it exists
+- name: Delete local  registry if it exists
   shell: 
     chdir: mirror-registry
     cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
@@ -55,21 +55,20 @@
   become: yes
  
 
-
 - name: Log into local mirror registry
   shell:
-    cmd: podman login --username init --password {{ mirror_registry_password }} $(hostname):8443
+    cmd: podman login --username init --password {{ mirror_registry_password }} $(hostname):8443 --tls-verify=false
 
 - name: Push pruned index  to mirror registry 
   shell:
-    cmd: podman push 
+    cmd: podman push $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false
 
 - name: Mirror operator images to local filesystem
   shell: 
     cmd: oc mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret.txt
 
 
-- name>: Delete local  registry
+- name: Delete local  registry
   shell: 
     chdir: mirror-registry
     cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
