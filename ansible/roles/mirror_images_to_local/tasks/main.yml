@@ -44,14 +44,14 @@
 - name: Delete local  registry if it exists
   shell: 
     chdir: mirror-registry
-    cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
+    cmd: ./mirror-registry uninstall --autoApprove true  > /dev/null 2>&1
   become: yes
   ignore_errors: yes
 
 - name: Create temporary local  registry 
   shell:
     chdir: mirror-registry
-    cmd: ./mirror_registry install --quayHostname $(hostname) --initUser init initPassword {{ mirror_registry_password }}
+    cmd: ./mirror-registry install --quayHostname $(hostname) --initUser init initPassword {{ mirror_registry_password }}
   become: yes
  
 
@@ -71,5 +71,5 @@
 - name: Delete local  registry
   shell: 
     chdir: mirror-registry
-    cmd: ./mirror_registry uninstall --autoApprove true  > /dev/null/ 2>&1
+    cmd: ./mirror-registry uninstall --autoApprove true  > /dev/null 2>&1
   become: yes
