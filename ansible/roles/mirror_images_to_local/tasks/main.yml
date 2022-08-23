@@ -87,15 +87,6 @@
   shell:
     cmd: podman push local/redhat-operator-index:v{{ sno_version }}  docker://$(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false --authfile=auth/pull-secret-combined.json
 
-# - name: Push pruned index to mirror registry 
-#   podman_image:
-#     name: "local/redhat-operator-index:v{{ sno_version }}"
-#     push: yes
-#     auth_file: auth/pull-secret-combined.json
-#     validate_certs: no
-#     push_args:
-#       dest: quay.io/acme
-
 - name: Mirror operator images to local filesystem
   shell: 
     cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret-combined.json
