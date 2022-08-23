@@ -49,6 +49,6 @@
     dest: assisted-installer/pod.yml
 
 - name: Start the assisted installer
-  command: podman play kube --configmap configmap.yml pod.yml 
+  command: podman play kube  --creds "init:{{ mirror_registry_password }}" --configmap configmap.yml pod.yml 
   args:
     chdir: assisted-installer

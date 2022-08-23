@@ -12,7 +12,8 @@
 
 - name: Create the CA private key and certificate
   shell:
-    cmd: openssl req -nodes -new -x509 -days 1825 -extensions v3_ca -keyout certs/ca/ca.key -out certs/ca/ca.crt -subj "/C=US/ST=Texas/L=Austin/O=IBM/OU=Build Labs/CN=MirrorRootCert"
+    cmd: openssl req -nodes -new -x509 -days 1825 -extensions v3_ca -keyout ca.key -out ca.crt -subj "/C=US/ST=Texas/L=Austin/O=IBM/OU=Build Labs/CN=MirrorRootCert"
+    chdir: certs/ca
   register: ca_crt
   when: not ca_crt_file.stat.exists or not ca_key_file.stat.exists
 
@@ -64,8 +65,8 @@
 
 - name: Copy CA to local certs
   copy:
-    src: "certs/mirror/{{ sno_domain_name }}.crt"
-    dest: "/usr/local/share/ca-certificates/{{ sno_domain_name }}.crt"
+    src: "certs/ca/ca.crt"
+    dest: "/usr/local/share/ca-certificates/ca.crt"
   become: yes
   delegate_to: localhost
 
