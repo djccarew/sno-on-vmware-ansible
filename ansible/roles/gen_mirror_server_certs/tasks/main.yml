@@ -66,6 +66,7 @@
   copy:
     src: "certs/mirror/{{ sno_domain_name }}.crt"
     dest: "/usr/local/share/ca-certificates/{{ sno_domain_name }}.crt"
+  become: yes
   delegate_to: localhost
 
 - name: Add CA locally
