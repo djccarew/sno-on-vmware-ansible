@@ -2,6 +2,9 @@
 - name: Mirror registry creds
   set_fact:
     unencoded_creds: "init:{{ mirror_registry_password }}"
+
+- name: Mirror registry encoded creds
+  set_fact:
     encoded_creds: "{{ unencoded_creds | b64encode }}"
 
 - name: Create pull secret for mirror registry
