@@ -11,6 +11,7 @@
   template:
     src: pull-secret-airgapped.json.j2
     dest: auth/pull-secret-airgapped.txt
+    force: yes
 
 - name: Check if registry is already running 
   shell: 
