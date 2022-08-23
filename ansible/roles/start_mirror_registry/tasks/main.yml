@@ -31,7 +31,7 @@
 
 - name: Mirror install images
   shell: 
-    chdir: "mirrored-images/install/{{ sno_release }}"
+    chdir: "mirrored-images/{{ sno_release }}/install"
     cmd: oc image mirror -a  ../../../auth/pull-secret-airgapped.txt --from-dir=$(pwd)/ "file://openshift/release:{{ sno_release }}*" {{ sno_local_registry }}/{{ sno_local_release }}
   register: mirror_install_images
 
