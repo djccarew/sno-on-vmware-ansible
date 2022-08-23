@@ -1,2 +1,0 @@
-assisted_service_api: 127.0.0.1:8090
-sno_infraenv_name: "{{ sno_cluster_name }}-infraenv"

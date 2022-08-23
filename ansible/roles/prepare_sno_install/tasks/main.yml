@@ -11,7 +11,7 @@
 
 - name: Get clusters
   uri:
-    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+    url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters"
     method: GET
     status_code: [200]
     return_content: yes
@@ -44,7 +44,7 @@
 
     - name: Register a cluster
       uri:
-        url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+        url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters"
         method: POST
         body_format: json
         status_code: [201]
@@ -102,7 +102,7 @@
 
 - name: Get infra-envs
   uri:
-    url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
+    url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs"
     method: GET
     status_code: [200]
    
@@ -142,7 +142,7 @@
 
     - name: Register an infraenv
       uri:
-        url: http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs
+        url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs"
         method: POST
         status_code: [201]
         body_format: json
@@ -193,7 +193,7 @@
 
 - name: Get InfraEnv Image Download URL
   uri:
-    url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}"
+    url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}"
     method: GET
     # headers:
     #   Authorization:  "{{ 'Bearer ' + refresh_token }}"

@@ -17,7 +17,7 @@
   block:
     - name: Get host status
       uri:
-        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts"
+        url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts"
         method: GET
         status_code: [200,409]
 #        headers:
@@ -35,7 +35,7 @@
 
     - name: Set hostname of single node
       uri:
-        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts/{{ host_response.json[0].id }}"
+        url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts/{{ host_response.json[0].id }}"
         method: PATCH
         body_format: json
         status_code: [201]
@@ -44,7 +44,7 @@
 #          Authorization: "{{ 'Bearer ' + refresh_token }}"
         body: |
           {
-            "host_name": "sno.{{ sno_cluster_name }}.{{ sno_domain_name }}"
+            "host_name": "{{ sno_host_prefix }}.{{ sno_cluster_name }}.{{ sno_domain_name }}"
           }
 
         return_content: yes
@@ -57,7 +57,7 @@
   block:
     - name: Call Assisted Installer API
       uri:
-        url: "http://{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ cluster_id }}/actions/install"
+        url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ cluster_id }}/actions/install"
         method: POST
 #        headers:
 #          Authorization:  "{{ 'Bearer ' + refresh_token }}"

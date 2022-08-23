@@ -28,27 +28,9 @@
     fail_msg: "Error: Polling script failed!"
     success_msg: "Install completed successfully!"
 
-# - name: Assisted installer token
-#   uri:
-#     url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
-#     method: POST
-#     status_code: [200]
-#     body_format: form-urlencoded
-#     body:
-#       grant_type: refresh_token
-#       client_id: cloud-services
-#       refresh_token: "{{ lookup('file','auth/token.txt') }}"
-#     return_content: yes
-#
-#   register: refresh_token_response
-#
-# - name: Parse response
-#   set_fact:
-#     refresh_token: "{{ refresh_token_response.json.access_token }}"
-
 - name: Get installer status
   uri:
-    url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters?with_hosts=true
+    url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters?with_hosts=true"
     method: GET
     headers:
     #   Authorization: "{{ 'Bearer ' + refresh_token }}"
@@ -66,13 +48,13 @@
 
 - name: Get kubeconfig file
   get_url:
-    url: "http://{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ installer_status.id }}/downloads/credentials?file_name=kubeconfig"
+    url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ installer_status.id }}/downloads/credentials?file_name=kubeconfig"
     dest: auth/{{ sno_cluster_name }}-kubeconfig
     force: yes
 
 - name: Get kubeadmin creds
   get_url:
-     url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ installer_status.id }}/credentials
+     url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ installer_status.id }}/credentials"
      headers:
        # Authorization:  "{{ 'Bearer ' + refresh_token }}"
        accept: "application/json"

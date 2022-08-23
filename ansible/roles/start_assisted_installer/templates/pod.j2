@@ -35,7 +35,7 @@ spec:
     name: image-service
 {% if sno_install_is_airgapped %}
     command: ["/bin/bash"]
-    args: ["-c","echo -e ${MIRROR_CA_CERT} > /etc/pki/ca-trust/source/anchors/snoutil.{{ sno_domain_name }}.ca.crt; update-ca-trust; /assisted-imge-service"]
+    args: ["-c","echo -e ${MIRROR_CA_CERT} > /etc/pki/ca-trust/source/anchors/snoutil.{{ sno_domain_name }}.ca.crt; update-ca-trust; /assisted-image-service"]
 {% endif %}
    
     ports:

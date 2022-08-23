@@ -1,1 +1,0 @@
-sno_vm_name: "{{ sno_cluster_name }}-vm"

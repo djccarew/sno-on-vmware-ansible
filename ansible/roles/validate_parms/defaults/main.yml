@@ -1,2 +1,0 @@
-sno_hostname: "sno.{{ sno_cluster_name }}.{{ sno_domain_name }}"
-assisted_service_api: "127.0.0.1:8090"

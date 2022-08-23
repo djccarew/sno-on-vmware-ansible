@@ -77,7 +77,7 @@
 
 - name: Verify sno_iso_datastore_path parameter
   assert:
-    that: 'sno_iso_datastore_path is defined and sno_iso_datastore_path is regex("^([a-z]:)*(\/*([a-z0-9]+\/)*([a-z0-9]+))")'
+    that: 'sno_iso_datastore_path is defined and sno_iso_datastore_path is regex("^([a-zA-Z]:)*(\/*([a-zA-Z0-9]+\/)*([a-zA-Z0-9]+))")'
     fail_msg: "variable sno_iso_datastore_path must be defined and be in the format of a datastore path"
 
 - name: Verify sno_vm_disk_size_gb parameter
@@ -105,6 +105,8 @@
     - sno_iso_datastore
     - sno_vm_datastore
     - sno_guest_id
+    - sno_util_host_prefix
+    - sno_host_prefix
 
 - name: Look for pull secret file
   stat:
@@ -124,7 +126,7 @@
 - name: Validate SNO hostname from DNS
   assert:
     that: sno_ip_address == sno_ip_from_dns
-    fail_msg: "DNS lookup for {{ sno_hostname }} should return {{ sno_ip_address }} not {{ sno_ip_from_dns }}"
+    fail_msg: "DNS lookup for {{ sno_util_hostname }} should return {{ sno_ip_address }} not {{ sno_ip_from_dns }}"
 
 - name: Reverse lookup SNO IP in DNS
   set_fact:
@@ -132,12 +134,12 @@
 
 - name: Validate reverse DNS lookup
   assert:
-     that: sno_hostname + '.' == sno_hostname_from_reverse_dns
-     fail_msg: "Reverse DNS lookup for {{ sno_ip_address }} should return {{ sno_hostname }}. not {{ sno_hostname_from_reverse_dns }}"
+     that: sno_util_hostname + '.' == sno_hostname_from_reverse_dns
+     fail_msg: "Reverse DNS lookup for {{ sno_ip_address }} should return {{ sno_util_hostname }}. not {{ sno_hostname_from_reverse_dns }}"
 
 # - name: Validate Assisted Installer endpoint 
 #   uri:
-#     url: http://{{ assisted_service_api }}/api/assisted-install/v2/clusters
+#     url: {{ assisted_service_api }}/api/assisted-install/v2/clusters
 #     method: GET
 #     status_code: [200]
 #     return_content: no
@@ -155,6 +157,7 @@
     - ai_image_tag
     - sno_operator_list
     - mirror_registry_password
+    - rhcos_iso_url
   when: sno_install_is_airgapped
   
 - name: Save validation status as fact
