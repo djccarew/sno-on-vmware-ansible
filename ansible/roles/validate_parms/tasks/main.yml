@@ -134,7 +134,7 @@
 
 - name: Validate reverse DNS lookup
   assert:
-     that: sno_util_hostname + '.' == sno_hostname_from_reverse_dns
+     that: sno_hostname + '.' == sno_hostname_from_reverse_dns
      fail_msg: "Reverse DNS lookup for {{ sno_ip_address }} should return {{ sno_util_hostname }}. not {{ sno_hostname_from_reverse_dns }}"
 
 # - name: Validate Assisted Installer endpoint 
