@@ -5,6 +5,7 @@
     - sno_release: "{{ sno_version }}.{{ sno_minor_version }}"
     - sno_local_release: "{{ 'ocp/openshift' +  sno_release | replace('.','') }}"
     - sno_util_hostname: "{{ sno_util_host_prefix }}.{{ sno_domain_name }}"
+    - sno_local_registry: "{{ sno_util_host_prefix }}.{{ sno_domain_name }}:{{ sno_local_registry_port }}"
   
   collections:
     - community.kubernetes
