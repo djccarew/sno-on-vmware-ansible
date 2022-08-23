@@ -126,7 +126,7 @@
 - name: Validate SNO hostname from DNS
   assert:
     that: sno_ip_address == sno_ip_from_dns
-    fail_msg: "DNS lookup for {{ sno_util_hostname }} should return {{ sno_ip_address }} not {{ sno_ip_from_dns }}"
+    fail_msg: "DNS lookup for {{ sno_hostname }} should return {{ sno_ip_address }} not {{ sno_ip_from_dns }}"
 
 - name: Reverse lookup SNO IP in DNS
   set_fact:
