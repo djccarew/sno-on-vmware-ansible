@@ -46,13 +46,6 @@
   podman_image:
     name: "registry.redhat.io/redhat/redhat-operator-index:v{{ sno_version }}"
     state: absent
-
-- name: Clean up work files from previous run
-  shell: |
-     rm -fr index_tmp_* > /dev/null 2>&1
-  args:
-    chdir: 
-  ignore_errors: yes
  
 - name: Prune registry 
   shell:
@@ -75,15 +68,6 @@
 - name: Debug output from registry create task
   debug:
     var: create_local_registry.stdout_lines
- 
-# - name: Log into local mirror registry
-#   shell:
-#     cmd: podman login --username init --password "{{ mirror_registry_password }}" $(hostname):8443 --tls-verify=false
-    
-# - name: Pause for 5 seconds after login
-#   pause:
-#     seconds: 5
-
 
 - name: Local reg credentials
   set_fact:
@@ -99,17 +83,19 @@
     creates: auth/pull-secret-combined.json
     cmd: cat pull-secret.txt | jq   ".auths += {\"$(hostname):8443\":{\"auth\":\"{{ encoded_reg_creds }}\"}}" > pull-secret-combined.json
 
-- name: Push pruned index to mirror registry 
-  shell:
-    cmd: podman push local/redhat-operator-index:v{{ sno_version }}  docker://$(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false --authfile=auth/pull-secret-combined.json
+# - name: Push pruned index to mirror registry 
+#   shell:
+#     cmd: podman push local/redhat-operator-index:v{{ sno_version }}  docker://$(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false --authfile=auth/pull-secret-combined.json
 
-# - name: Build and push an image using an auth file
-#   podman_image:
-#     name: "{{ sno_local_registry }}/olm-mirror/redhat-operator-index:v{{ sno_version }}"
-#     push: yes
-#     auth_file: auth/pull-secret-combined.json
-#     push_args:
-#       dest: quay.io/acme
+- name: Push pruned index to mirror registry 
+  podman_image:
+    name: "local/redhat-operator-index:v{{ sno_version }}"
+    push: yes
+    auth_file: auth/pull-secret-combined.json
+    validate_certs: no
+    push_args:
+      dest: quay.io/acme
+
 - name: Mirror operator images to local filesystem
   shell: 
     cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret-combined.json
@@ -119,4 +105,19 @@
   shell: 
     chdir: mirror-registry
     cmd: ./mirror-registry uninstall --autoApprove true  > /dev/null 2>&1
+  become: yes
+
+- name: Find leftover workfile dirs
+  find:
+    paths: "{{ playbook_dir }}"
+    patterns: "manifests-redhat-operator-index-*,index_temp_*"
+    use_regex: true
+    file_type: directory
+  register: folders_to_delete
+
+- name: Deleting the directories...
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ folders_to_delete.files }}"
   become: yes
