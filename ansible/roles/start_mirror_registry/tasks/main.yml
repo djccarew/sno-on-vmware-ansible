@@ -12,6 +12,14 @@
     src: pull-secret-airgapped.json.j2
     dest: auth/pull-secret-airgapped.txt
 
+- name: Check if registry is already running 
+  shell: 
+    chdir: mirror-registry
+    cmd: netstat -tulpn | grep LISTEN | grep "0.0.0.0:8443"
+  become: yes
+  register: registry_run_status
+  failed_when: "registry_run_status.rc == 2"
+  ignore_errors: yes
 
 - name: Install local mirror registry
   shell: 
@@ -19,11 +27,12 @@
     cmd: ./mirror-registry install --quayHost $(hostname) --initPassword {{ mirror_registry_password }} --sshKey ../certs/mirror/{{ sno_domain_name }}.crt --sshCert ../certs/mirror/{{ sno_domain_name}}.key
   become: yes
   register: mirror_registry_install
+  when: registry_run_status.rc == 1
 
 - name: Mirror install images
   shell: 
-    chdir: mirrored-install-images
-    cmd: oc image mirror -a  ../auth/pull-secret-airgapped.txt --from-dir=$(pwd)/ "file://openshift/release:{{ sno_release }}*" {{ sno_local_registry }}/{{ sno_local_release }}
+    chdir: "mirrored-images/install/{{ sno_release }}"
+    cmd: oc image mirror -a  ../../../auth/pull-secret-airgapped.txt --from-dir=$(pwd)/ "file://openshift/release:{{ sno_release }}*" {{ sno_local_registry }}/{{ sno_local_release }}
   register: mirror_install_images
 
 - name: Mirror OLM images
@@ -33,8 +42,9 @@
 
 - name: Generate manifest
   shell: 
-    chdir: mirrored-install-images/{{ sno_release }}/olm 
+    chdir: mirrored-images/{{ sno_release }}/olm 
     cmd: oc adm catalog mirror  {{ sno_local_registry }}/olm-mirror/local-index-olm-mirror-redhat-operator-index:v{{ sno_version }} {{ sno_local_registry }}/olm-mirror -a  ../../../auth/pull-secret-airgapped.txt --manifests-only
+  when: registry_run_status.rc == 1
 
 
  
