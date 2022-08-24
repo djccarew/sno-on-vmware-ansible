@@ -25,7 +25,7 @@
     skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-agent 
     skopeo copy docker://quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }} dir:$(pwd)/assisted-service 
     skopeo copy docker://quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }} dir:$(pwd)/assisted-image-service 
-    skopeo copy docker://k8.gcr.io/pause:3.5 dir:$(pwd)/pause
+    skopeo copy docker://k8s.gcr.io/pause:3.5 dir:$(pwd)/pause
   args: 
     chdir: mirrored-images/ai
 
