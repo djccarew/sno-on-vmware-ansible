@@ -25,7 +25,7 @@
 - name: Install local mirror registry
   shell: 
     chdir: mirror-registry
-    cmd: ./mirror-registry install --quayHost $(hostname) --initPassword {{ mirror_registry_password }}
+    cmd: ./mirror-registry install --quayHostname $(hostname) --initPassword {{ mirror_registry_password }}
   become: yes
   register: mirror_registry_install
   when: registry_run_status.rc == 1
