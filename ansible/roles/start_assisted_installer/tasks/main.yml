@@ -33,7 +33,7 @@
 
     - name: Convert mirror ca cert to string
       set_fact: 
-         mirror_ca_cert: "{{ lookup('file', 'certs/ca/ca.crt') | replace('\n','\\n') }}"
+         mirror_ca_cert: "{{ lookup('file', 'certs/ca/quayCA.crt') | replace('\n','\\n') }}"
       
   when: sno_install_is_airgapped
 
