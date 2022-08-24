@@ -91,7 +91,7 @@
 - name: Mirror operator images to local filesystem
   shell: 
     chdir: "mirrored-images/{{ sno_release }}/olm"
-    cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a auth/pull-secret-combined.json
+    cmd: oc adm catalog mirror $(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} file:///local/index --insecure -a ../../../auth/pull-secret-combined.json
 
 
 - name: Delete local  registry
@@ -100,17 +100,3 @@
     cmd: ./mirror-registry uninstall --autoApprove true  > /dev/null 2>&1
   become: yes
 
-- name: Find leftover workfile dirs
-  find:
-    paths: "{{ playbook_dir }}"
-    patterns: "manifests-redhat-operator-index-*,index_temp_*"
-    use_regex: true
-    file_type: directory
-  register: folders_to_delete
-
-- name: Deleting the directories...
-  file:
-    path: "{{ item.path }}"
-    state: absent
-  with_items: "{{ folders_to_delete.files }}"
-  become: yes

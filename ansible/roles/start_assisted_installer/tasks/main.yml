@@ -17,11 +17,11 @@
         skopeo copy --dest-creds "init:{{ mirror_registry_password }}" dir:$(pwd)/assisted-installer-agent docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }}
         skopeo copy --dest-creds "init:{{ mirror_registry_password }}" dir:$(pwd)/assisted-service docker://{{ sno_local_registry }}/edge-infrastructure/assisted-service:{{ ai_image_tag }}
         skopeo copy --dest-creds "init:{{ mirror_registry_password }}" dir:$(pwd)/assisted-image-service docker://{{ sno_local_registry }}/edge-infrastructure/assisted-image-service:{{ ai_image_tag }}
-        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" dir:$(pwd)/pause docker://{{ sno_local_registry }}/edge-infrastructure/pause:3.5
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" dir:$(pwd)/pause docker://{{ sno_local_registry }}/pause:3.5
       args:
         chdir: "mirrored-images/ai"
 
-    - name: Setup registries.conf
+    - name: Setup registries.conf for SNO VM
       template:
         src: registries.conf.j2
         dest: assisted-installer/registries.conf
@@ -34,6 +34,20 @@
     - name: Convert mirror ca cert to string
       set_fact: 
          mirror_ca_cert: "{{ lookup('file', 'certs/ca/quayCA.crt') | replace('\n','\\n') }}"
+
+    - name: Map references to k8s.gcr.io to local reg 
+      blockinfile:
+        path: "/etc/containers/registries.conf"
+        state: present
+        block: |
+          [[registry]]
+          prefix = ""
+          location = "k8s.gcr.io/pause"
+          mirror-by-digest-only = false
+ 
+          [[registry.mirror]]
+          location = "{{ sno_util_hostname }}:8443/pause"
+      become: yes
       
   when: sno_install_is_airgapped
 
