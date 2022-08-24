@@ -20,18 +20,18 @@ data:
   IPV6_SUPPORT: "true"
   ISO_IMAGE_TYPE: "full-iso"
   LISTEN_PORT: "8888"
-  NTP_DEFAULT_SERVER: "snoutil.{{ sno_domain_name }}"
+  NTP_DEFAULT_SERVER: "{{ sno_util_host_prefix }}.{{ sno_domain_name }}"
   OS_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url":"http://{{ sno_util_hostname }}/pub/openshift-v4/dependencies/rhcos/4.10/4.10.16/rhcos-4.10.16-x86_64-live.x86_64.iso","version":"410.84.202205191234-0"}]'
   POSTGRESQL_DATABASE: installer
   POSTGRESQL_PASSWORD: admin
   POSTGRESQL_USER: admin
 {% if sno_install_is_airgapped %}
-  PUBLIC_CONTAINER_REGISTRIES: "snoutil.{{ sno_domain_name }}:8443"
-  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "snoutil.{{ sno_domain_name }}:8443/ocp/openshift4:4.10.22-x86_64","version":"4.10.22","default":true}]'
-  AGENT_DOCKER_IMAGE: "snoutil.{{ sno_domain_name }}:8443/edge-infrastructure/assisted-installer-agent:latest"
-  CONTROLLER_IMAGE: "snoutil.{{ sno_domain_name }}:8443/edge-infrastructure/assisted-installer-controller:latest"
-  SERVICE_IMAGE: "snoutil.{{ sno_domain_name }}:8443/edge-infrastructure/assisted-service:latest"
-  INSTALLER_IMAGE: "snoutil.{{ sno_domain_name }}:8443/edge-infrastructure/assisted-installer:latest"
+  PUBLIC_CONTAINER_REGISTRIES: "{{ sno_util_host_prefix }}.{{ sno_domain_name }}:8443"
+  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "{{ sno_util_hostname }}:8443/ocp/openshift{{ sno_local_release }}:4.10.22-x86_64","version":"4.10.22","default":true}]'
+  AGENT_DOCKER_IMAGE: "{{ sno_util_hostname }}:8443/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }}"
+  CONTROLLER_IMAGE: "{{ sno_util_hostname }}:8443/edge-infrastructure/assisted-installer-controller:{{ ai_image_tag }}"
+  SERVICE_IMAGE: "{{ sno_util_hostname }}:8443/edge-infrastructure/assisted-service:{{ ai_image_tag }}"
+  INSTALLER_IMAGE: "{{ sno_util_hostname }}:8443/edge-infrastructure/assisted-installer:{{ ai_image_tag }}"
   REGISTRIES_CONF: '{{ registries_conf }}'
   MIRROR_CA_CERT: "{{ mirror_ca_cert }}"
 {% else %}
