@@ -1,6 +1,6 @@
 ---
 - name: Stop if already running
-  command: podman play kube --down pod.yml > /dev/null 2>&1
+  shell: podman pod stop assisted-installer &&  podman pod stop assisted-installer
   args:
     chdir: assisted-installer
   ignore_errors: yes
@@ -52,15 +52,33 @@
   when: sno_install_is_airgapped
 
 
-- name: Setup configmap.yml file
+- name: Setup configmap.yml file for airgapped
+  template: 
+    src: configmap-airgapped.j2
+    dest: assisted-installer/configmap.yml
+    force: yes
+  when: sno_install_is_airgapped
+
+- name: Setup configmap.yml file for non airgapped
   template: 
     src: configmap.j2
     dest: assisted-installer/configmap.yml
+    force: yes
+  when: not sno_install_is_airgapped
 
-- name: Setup pod.yml file
+- name: Setup pod.yml file for airgapped
+  template:
+    src: pod-airgapped.j2
+    dest: assisted-installer/pod.yml
+    force: yes
+  when: sno_install_is_airgapped
+  
+- name: Setup pod.yml file for non airgapped
   template:
     src: pod.j2
     dest: assisted-installer/pod.yml
+    force: yes
+  when: not sno_install_is_airgapped
 
 - name: Start the assisted installer
   command: podman play kube  --creds "init:{{ mirror_registry_password }}" --configmap configmap.yml pod.yml 

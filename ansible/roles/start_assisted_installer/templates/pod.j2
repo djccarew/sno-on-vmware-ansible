@@ -8,53 +8,29 @@ spec:
   containers:
   - args:
     - run-postgresql
-{% if sno_install_is_airgapped %}
-    image: {{ sno_util_hostname }}:8443/centos7/postgresql-12-centos7:latest
-{% else %}
     image: quay.io/centos7/postgresql-12-centos7:latest
-{% endif %}
+    name: db
     envFrom:
     - configMapRef:
         name: config
-{% if sno_install_is_airgapped %}
-  - image: {{ sno_util_hostname }}:8443/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }}
-{% else %}
- - image: quay.io/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }}
- {% endif %}
+  - image: quay.io/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }}
     name: ui
     ports:
     - hostPort: 8080
     envFrom:
     - configMapRef:
         name: config
-{% if sno_install_is_airgapped %}
-  - image:  {{ sno_util_hostname }}:8443/edge-infrastructure/assisted-image-service:{{ ai_image_tag }}
-{% else %}
   - image: quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }}
-{% endif %}
     name: image-service
-{% if sno_install_is_airgapped %}
-    command: ["/bin/bash"]
-    args: ["-c","echo -e ${MIRROR_CA_CERT} > /etc/pki/ca-trust/source/anchors/{{ sno_util_hostname }}.ca.crt; update-ca-trust; /assisted-image-service"]
-{% endif %}
-   
     ports:
     - hostPort: 8888
     envFrom:
     - configMapRef:
         name: config
-{% if sno_install_is_airgapped %}
-  - image: {{ sno_util_hostname }}:8443/edge-infrastructure/assisted-service:{{ ai_image_tag }}
-{% else %}
-  - image: quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }}
-{% endif %}
+  - image: quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }}
     name: service
-{% if sno_install_is_airgapped %}
-    command: ["/bin/bash"]
-    args: ["-c","echo -e ${REGISTRIES_CONF} > /etc/containers/registries.conf; echo -e ${MIRROR_CA_CERT} > /etc/pki/ca-trust/source/anchors/{{ sno_util_hostname }}.ca.crt; update-ca-trust; /assisted-service"]
-{% endif %}
     ports:
-    - hostPort: 8090 
+    - hostPort: 8090
     envFrom:
     - configMapRef:
         name: config

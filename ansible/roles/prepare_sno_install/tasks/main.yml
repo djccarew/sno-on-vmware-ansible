@@ -59,15 +59,6 @@
             "base_dns_domain": "{{ sno_domain_name }}",
             "vip_dhcp_allocation": false,
             "ssh_public_key": "{{ lookup('file', 'auth/' + name_prefix + '-remote-id_rsa.pub') }}",
-            "platform": {
-              "vsphere": {
-                "vcenter": "{{ vcenter_hostname }}",
-                "username": "{{ vcenter_username }}",
-                "password": "{{ vcenter_password }}"",
-                "datacenter": "{{ vcenter_datacenter }}",
-                "defaultDatastore": "{{ sno_vm_datastore }}"
-            },
-  
             "machine_networks": [
                 {
                     "cidr": "{{ sno_machine_cidr  }}"
@@ -154,6 +145,7 @@
               "openshift_version": "4.10",
               "pull_secret": "{{ escaped_pull_secret  }}",
               "image_type": "full-iso",
+              "ssh_authorized_key": "{{ lookup('file', 'auth/' + name_prefix + '-remote-id_rsa.pub') }}",
               "static_network_config": [
                 {
                  "network_yaml": "{{ nmstate_yaml1 }}",

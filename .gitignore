@@ -7,3 +7,4 @@ ansible/auth/*
 !ansible/auth/.donotdelete
 ansible/static-networking/*
 !ansible/static-networking/.donotdelete
+ansible/sample-config

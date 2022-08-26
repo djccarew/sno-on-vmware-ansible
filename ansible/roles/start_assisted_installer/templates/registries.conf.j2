@@ -6,7 +6,7 @@ location = "quay.io/openshift-release-dev/ocp-release"
 mirror-by-digest-only = false
 
 [[registry.mirror]]
-location = "{{ sno_util_hostname }}:8443/ocp/openshift{{ sno_local_release }}"
+location = "{{ sno_util_hostname }}:8443/{{ sno_local_release }}"
 
 [[registry]]
 prefix = ""
@@ -14,4 +14,4 @@ location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
 mirror-by-digest-only = false
 
 [[registry.mirror]]
-location = "{{ sno_util_hostname }}:8443/ocp/openshift{{ sno_local_release }}"
+location = "{{ sno_util_hostname }}:8443/{{ sno_local_release }}"

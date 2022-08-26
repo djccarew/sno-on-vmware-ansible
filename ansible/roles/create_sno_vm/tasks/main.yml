@@ -34,6 +34,7 @@
       get_url:
         url: "{{ download_url }}"
         dest: "/tmp//discovery_{{ sno_cluster_name }}.iso"
+        force: yes
         mode:  0644
 
     - name: Copy ISO to datastore

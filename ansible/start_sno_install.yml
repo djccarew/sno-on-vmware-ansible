@@ -13,8 +13,6 @@
   roles:
     - role: validate_parms
       when: vars_validated is not defined
-#    - role: gen_mirror_server_certs
-#       when: sno_install_is_airgapped 
     - role: start_mirror_registry
       when: sno_install_is_airgapped 
     - role: start_assisted_installer
