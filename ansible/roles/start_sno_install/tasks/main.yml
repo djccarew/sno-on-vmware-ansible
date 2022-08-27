@@ -20,8 +20,6 @@
         url: "{{ assisted_service_api }}/api/assisted-install/v2/infra-envs/{{ infraenv_id }}/hosts"
         method: GET
         status_code: [200,409]
-#        headers:
-#          Authorization:  "{{ 'Bearer ' + refresh_token }}"
         return_content: yes
       register: host_response
       until: host_response.status == 200 and  host_response.json is defined and (host_response.json | length > 0) and  host_response.json[0].status_info == "Host is ready to be installed"
@@ -41,7 +39,7 @@
         status_code: [201]
         headers:
           Content-Type: "application/json"
-#          Authorization: "{{ 'Bearer ' + refresh_token }}"
+
         body: |
           {
             "host_name": "{{ sno_host_prefix }}.{{ sno_cluster_name }}.{{ sno_domain_name }}"
@@ -59,8 +57,7 @@
       uri:
         url: "{{ assisted_service_api }}/api/assisted-install/v2/clusters/{{ cluster_id }}/actions/install"
         method: POST
-#        headers:
-#          Authorization:  "{{ 'Bearer ' + refresh_token }}"
+
         return_content: yes
         status_code: [202,400]
       register: start_response

@@ -1,0 +1,9 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: local-index-olm-mirror-redhat-operator-index
+  namespace: openshift-marketplace
+spec:
+  image: >-
+    {{ sno_util_hostname }}:{{ sno_local_registry_port }}/olm-mirror/local-index-olm-mirror-redhat-operator-index:v{{ sno_version }}
+  sourceType: grpc

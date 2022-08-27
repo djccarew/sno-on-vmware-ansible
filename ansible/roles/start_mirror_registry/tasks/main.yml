@@ -7,6 +7,17 @@
   set_fact:
     encoded_creds: "{{ unencoded_creds | b64encode }}"
 
+- name: Get quay.io auth and email from pull secret
+  shell: jq '.auths  | to_entries[] | select(.key=="quay.io") | .value.auth,.value.email' pull-secret.txt
+  args:
+    chdir: auth
+  register: auth_extract
+
+- name: Save quay.io auth and email
+  set_fact:
+    quay_io_auth: "{{ auth_extract.stdout_lines[0] }}"
+    rh_account_email: "{{ auth_extract.stdout_lines[1] }}"
+
 - name: Create pull secret for mirror registry
   template:
     src: pull-secret-airgapped.json.j2

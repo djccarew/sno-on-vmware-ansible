@@ -25,7 +25,7 @@
     skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-agent 
     skopeo copy docker://quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }} dir:$(pwd)/assisted-service 
     skopeo copy docker://quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }} dir:$(pwd)/assisted-image-service 
-    skopeo copy docker://k8s.gcr.io/pause:3.5 dir:$(pwd)/pause
+    skopeo copy docker://k8s.gcr.io/pause:3.5 dir:$(pwd)/pause   skopeo copy docker://k8s.gcr.io/pause:3.5 dir:$(pwd)/pause
   args: 
     chdir: mirrored-images/ai
 
@@ -87,6 +87,20 @@
 - name: Push pruned index to mirror registry 
   shell:
     cmd: podman push local/redhat-operator-index:v{{ sno_version }}  docker://$(hostname):8443/olm-mirror/redhat-operator-index:v{{ sno_version }} --tls-verify=false --authfile=auth/pull-secret-combined.json
+
+- name: Find any previous manifest dirs prior to olm mirroring
+  find: 
+    file_type: directory
+    paths: "mirrored-images/{{ sno_release }}/olm"
+    patterns: "manifests-*"
+    recurse: no
+  register: manifest_dirs
+
+- name: Delete any previous manifest dirs
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ manifest_dirs.files }}" 
 
 - name: Mirror operator images to local filesystem
   shell: 

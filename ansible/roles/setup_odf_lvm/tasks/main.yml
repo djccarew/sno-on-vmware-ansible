@@ -24,16 +24,25 @@
       set_fact:
         manifest_dir: "{{ manifest_dirs.files[0].path }}"
 
-    - name: Add Catalog source and image context source policy
+    - name: Gen Catalog source
+      template:
+        src: odflvm-catalog-source.yml.j2
+        dest: "k8s/{{ sno_version }}/odmlvm-catalog-source.yml"
+
+    - name: Add Catalog source
       k8s:
         state: present
-        src: "{{ item }}"
+        src: "k8s/{{ sno_version }}/odmlvm-catalog-source.yml"
         validate_certs: no
         kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
-      with_items:
-        - "{{ manifest_dir }}/catalogSource.yaml"
-        - "{{ manifest_dir }}/imageContextSourcePolicy.yaml"
 
+    - name: Add image content source policy
+      k8s:
+        state: present
+        src: "{{ manifest_dir }}/imageContentSourcePolicy.yaml"
+        validate_certs: no
+        kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+      
   when:  sno_install_is_airgapped 
 
 - name: "Install ODF LVM Operator"

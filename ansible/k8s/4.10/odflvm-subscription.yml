@@ -7,6 +7,6 @@ spec:
   channel: stable-4.10
   installPlanApproval: Automatic
   name: odf-lvm-operator
-  source: airgapped-operator-catalog
+  source: local-index-olm-mirror-redhat-operator-index
   sourceNamespace: openshift-marketplace
   startingCSV: odf-lvm-operator.v4.10.5
