@@ -14,6 +14,8 @@
   roles:
     - role: validate_parms
       when: vars_validated is not defined
+    - role: patch_operator_hub
+      when: sno_install_is_airgapped 
     - role: setup_odf_lvm
 
 

@@ -1,0 +1,12 @@
+---
+- name: Patch external Operator hub sources
+  k8s_json_patch:
+    apiVersion: config.openshift.io/v1
+    kind: OperatorHub
+    name: cluster
+    patch:
+      - op: add
+        path: /spec/disableAllDefaultSources
+        value: true
+
+
