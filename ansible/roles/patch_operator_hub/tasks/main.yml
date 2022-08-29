@@ -4,7 +4,7 @@
     api_version: config.openshift.io/v1
     kind: OperatorHub
     name: cluster
-    kubeconfig: "{{ sno_cluster_name }}-kubeconfig"
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
     patch:
       - op: add
         path: /spec/disableAllDefaultSources
