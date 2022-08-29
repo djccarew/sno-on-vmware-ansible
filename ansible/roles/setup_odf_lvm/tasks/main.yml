@@ -48,9 +48,9 @@
         api_version: "operators.coreos.com/v1alpha1"
         kind: CatalogSource
         name: local-index-olm-mirror-redhat-operator-index
-        namespace: operator-marketplace
+        namespace: openshift-marketplace
       register: airgapped_cs
-      until: airgapped_cs.api_found and  airgapped_cs.resources.status is defined and airgapped_cs.resources.status.connectionState.lastObservedState == "READY"
+      until: airgapped_cs.api_found and airgapped_cs.resources.status is defined and airgapped_cs.resources.status.connectionState.lastObservedState == "READY"
       delay: 10
       retries: 18
 
