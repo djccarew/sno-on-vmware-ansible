@@ -41,11 +41,20 @@
   register: mirror_registry_install
   when: registry_run_status.rc == 1
 
-- name: Fix quay modifications to /etc/hosts
+- name: Fix quay modifications to /etc/hosts - Remove hostname mapping to localhost
   lineinfile:
     path: /etc/hosts
     state: absent
-    regexp: "^127*{{ sno_util_hostname }}"
+    regexp: "^127.*{{ sno_util_hostname }}$"
+  become: yes
+
+- name: Fix quay modifications to /etc/hosts - Replace with hostname mapping to actual IP 
+  lineinfile:
+    path: /etc/hosts
+    state: present
+    line: "{{ sno_ip_address }} {{ sno_util_hostname }}"
+  become: yes
+
 
 - name: Copy CA file to local OS
   copy:

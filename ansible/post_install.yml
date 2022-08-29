@@ -10,6 +10,7 @@
     
   collections:
     - community.kubernetes
+    - kubernetes.core
 
   roles:
     - role: validate_parms
