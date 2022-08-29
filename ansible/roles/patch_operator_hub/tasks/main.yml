@@ -1,6 +1,6 @@
 ---
 - name: Patch external Operator hub sources
-  k8s_json_patch:
+  kubernetes.core.k8s_json_patch:
     api_version: config.openshift.io/v1
     kind: OperatorHub
     name: cluster
