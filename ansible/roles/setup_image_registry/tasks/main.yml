@@ -1,0 +1,54 @@
+---
+- name: PVC for image registry
+  k8s:
+    state: present
+    validate_certs: no
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: image-registry-pvc
+        namespace: openshift-image-registry
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+
+
+- name: Patch Registry Operator CRD 
+  kubernetes.core.k8s_json_patch:
+    api_version: config.openshift.io/v1
+    kind: ImageRegistry
+    name: cluster
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+    patch:
+      - op: replace
+        path: /spec/managementState
+        value: "Managed"
+      - op: replace
+        path: /spec/rolloutStrategy
+        value: "Recreate"
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/storage
+        value: '{"pvc":{"claim": "image-registry-pvc" }}'
+      - op: replace
+        path: /spec/defaultRoute
+        value: true
+
+- name: Get registry endpoint
+  k8s_info:
+    api_version: "operators.coreos.com/v1alpha1"
+    kind: Route
+    name:  default-route
+    namespace: openshift-image-registry
+    validate_certs: no
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+  register: registry_route
+
+  
