@@ -53,7 +53,7 @@
       register: airgapped_cs
       until: airgapped_cs.api_found and airgapped_cs.resources[0].status.connectionState.lastObservedState == "READY"
       delay: 10
-      retries: 1
+      retries: 18
       ignore_errors: yes
 
   when:  sno_install_is_airgapped 
