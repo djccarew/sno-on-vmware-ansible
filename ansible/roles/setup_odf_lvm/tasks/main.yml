@@ -56,10 +56,6 @@
       retries: 1
       ignore_errors: yes
 
-    - name: Add debug code
-      debug:
-        var: airgapped_cs.resources
-
   when:  sno_install_is_airgapped 
 
 - name: "Install ODF LVM Operator"
