@@ -90,7 +90,7 @@
   k8s_info:
     api_version: "operators.coreos.com/v1alpha1"
     kind: ClusterServiceVersion
-    name: "{{ odf_lvm_subscription.resources.status.currentCSV }}"
+    name: "{{ odf_lvm_subscription.resources[0].status.currentCSV }}"
     namespace: openshift-storage
     validate_certs: no
     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
