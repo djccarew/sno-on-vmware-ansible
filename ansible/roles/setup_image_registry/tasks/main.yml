@@ -20,8 +20,8 @@
 
 - name: Patch Registry Operator CRD 
   kubernetes.core.k8s_json_patch:
-    api_version: config.openshift.io/v1
-    kind: ImageRegistry
+    api_version: imageregistry.operator.openshift.io/v1
+    kind: Config
     name: cluster
     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
     patch:
@@ -36,7 +36,7 @@
         value: 1
       - op: replace
         path: /spec/storage
-        value: '{"pvc":{"claim": "image-registry-pvc" }}'
+        value: '{"pvc":{"claim": "image-registry-pvc"}}'
       - op: replace
         path: /spec/defaultRoute
         value: true
