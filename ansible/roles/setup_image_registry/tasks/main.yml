@@ -43,7 +43,7 @@
 
 - name: Get registry endpoint
   k8s_info:
-    api_version: "operators.coreos.com/v1alpha1"
+    api_version: route.openshift.io/v1
     kind: Route
     name:  default-route
     namespace: openshift-image-registry
@@ -51,4 +51,6 @@
     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
   register: registry_route
 
-  
+- name: Print Registry route hostname
+  debug:
+    msg: "Internal Registry URL is https://{{ registry_route.resources[0].spec.host }}"
