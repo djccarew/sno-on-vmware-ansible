@@ -36,7 +36,9 @@
         value: 1
       - op: replace
         path: /spec/storage
-        value: '{"pvc":{"claim": "image-registry-pvc"}}'
+        value: 
+          pvc:
+            claim: "image-registry-pvc"
       - op: replace
         path: /spec/defaultRoute
         value: true
