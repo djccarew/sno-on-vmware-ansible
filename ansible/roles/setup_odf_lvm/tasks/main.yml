@@ -114,7 +114,14 @@
   until: odf_lvm_cluster.api_found  and odf_lvm_cluster.resources[0].status.deviceClassStatuses is defined and odf_lvm_cluster.resources[0].status.deviceClassStatuses[0].nodeStatus[0].status == "Ready"
   retries: 30
   delay: 10
-  
+
+- name: Make ODF LVM storage class the default
+  shell: oc patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  environment:
+    KUBECONFIG: "auth/{{ sno_cluster_name }}-kubeconfig"
+
+
+ 
 - name: Ending message
   debug:
     msg: "ODF LVM successfully installed and configured"
