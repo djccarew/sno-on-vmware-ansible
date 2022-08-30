@@ -116,7 +116,8 @@
   delay: 10
 
 - name: Make ODF LVM storage class the default
-  shell: oc patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  shell: |
+    oc patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
   environment:
     KUBECONFIG: "auth/{{ sno_cluster_name }}-kubeconfig"
 
