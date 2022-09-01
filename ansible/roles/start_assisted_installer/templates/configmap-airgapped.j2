@@ -26,7 +26,7 @@ data:
   POSTGRESQL_PASSWORD: admin
   POSTGRESQL_USER: admin
   PUBLIC_CONTAINER_REGISTRIES: "{{ sno_util_hostname }}:8443"
-  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "{{ sno_util_hostname }}:8443/ocp/openshift41022:4.10.22-x86_64","version":"4.10.22","default":true}]'
+  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "{{ sno_util_hostname }}:8443/{{ sno_local_release }}:4.10.22-x86_64","version":"4.10.22","default":true}]'
   SERVICE_BASE_URL: http://{{ sno_util_hostname }}:8090
   STORAGE: filesystem
   ENABLE_UPGRADE_AGENT: "false"
