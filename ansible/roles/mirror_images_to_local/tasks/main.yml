@@ -69,7 +69,7 @@
 - name: Debug output from registry create task
   debug:
     var: create_local_registry.stdout_lines
-tti
+    
 - name: Local reg credentials
   set_fact:
     local_reg_creds: "{{ 'init:' + mirror_registry_password }}"
