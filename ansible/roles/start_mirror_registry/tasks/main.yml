@@ -48,14 +48,6 @@
     regexp: "^127.*{{ sno_util_hostname }}$"
   become: yes
 
-- name: Fix quay modifications to /etc/hosts - Replace with hostname mapping to actual IP 
-  lineinfile:
-    path: /etc/hosts
-    state: present
-    line: "{{ sno_ip_address }} {{ sno_util_hostname }}"
-  become: yes
-
-
 - name: Copy CA file to local OS
   copy:
     dest: "/usr/local/share/ca-certificates/quayCA.crt"

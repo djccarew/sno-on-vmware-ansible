@@ -84,3 +84,9 @@
   command: podman play kube  --creds "init:{{ mirror_registry_password }}" --configmap configmap.yml pod.yml 
   args:
     chdir: assisted-installer
+
+
+- name: Give the assisted installer some time to start 
+  pause:
+    seconds: 10
+    
