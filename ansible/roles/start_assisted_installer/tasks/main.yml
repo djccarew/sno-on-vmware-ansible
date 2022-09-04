@@ -8,7 +8,7 @@
 
 - name: Airgapped is configured 
   block:
-  
+
     - name: Copy assisted installer postgresql images to mirror registry
       shell: |
         skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/postgresql-12-centos7-centos7.tar docker://{{ sno_local_registry }}/centos7/postgresql-12-centos7:latest
@@ -47,7 +47,7 @@
 
     - name: Copy assisted installer image service  image to mirror registry
       shell: |
-        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-image-service-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-image-service:{{ ai_image_tag }}
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-image-service-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-image-service:{{ ai_image_tag }}
       args:
         chdir: "mirrored-images/ai"
 
