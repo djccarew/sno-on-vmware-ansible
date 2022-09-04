@@ -7,7 +7,7 @@
         msg: "Starting end to end install of OpenShift single node cluster on VMware ..."
 
 - name: Start SNO install
-  import_playbook: start_sno_install.yml
+  import_playbook: kickoff_sno_install.yml
 
 - name: Complete SNO install
   import_playbook: complete_sno_install.yml
