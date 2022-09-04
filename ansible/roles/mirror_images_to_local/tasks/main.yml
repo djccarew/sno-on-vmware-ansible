@@ -71,7 +71,7 @@
     podman save --format docker-archive -o $(pwd)/pause-3.5.tar k8s.gcr.io/pause:3.5
   args: 
     chdir: mirrored-images/ai
-    creates: pause-{{ ai_image_tag }}.tar
+    creates: pause-3.5.tar
 
 - name: Mirror OpenShift install images to local disk 
   shell:
