@@ -16,18 +16,62 @@
     state: directory
     recurse: yes
 
-- name: Mirror assisted installer images to local disk
+- name: Mirror assisted installer postgresql image to local disk
   shell: |
-    skopeo copy docker://quay.io/centos7/postgresql-12-centos7:centos7 dir:$(pwd)/postgresql
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-ui 
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer:{{ ai_image_tag }} dir:$(pwd)/assisted-installer 
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-controller:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-controller 
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }} dir:$(pwd)/assisted-installer-agent 
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }} dir:$(pwd)/assisted-service 
-    skopeo copy docker://quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }} dir:$(pwd)/assisted-image-service 
-    skopeo copy docker://k8s.gcr.io/pause:3.5 dir:$(pwd)/pause 
+    skopeo copy docker://quay.io/centos7/postgresql-12-centos7:centos7 docker-archive:$(pwd)/postgresql-12-centos7-centos7.tar
   args: 
     chdir: mirrored-images/ai
+    creates: postgresql-12-centos7-centos7.tar
+
+- name: Mirror assisted installer ui image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-installer-ui-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-installer-ui-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-installer-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-installer-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer controller image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-controller:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-installer-controller-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-installer-controller-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer agent image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-installer-agent-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-installer-agent-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer service image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-service:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-service-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-service-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer image service image to local disk
+  shell: |
+    skopeo copy docker://quay.io/edge-infrastructure/assisted-image-service:{{ ai_image_tag }} docker-archive:$(pwd)/assisted-image-service-{{ ai_image_tag }}.tar
+  args: 
+    chdir: mirrored-images/ai
+    creates: assisted-image-service-{{ ai_image_tag }}.tar
+
+- name: Mirror assisted installer k8s.gcr.io/pause  image to local disk
+  shell: |
+    podman pull k8s.gcr.io/pause:3.5
+    podman save --format docker-archive -o $(pwd)/pause-3.5.tar k8s.gcr.io/pause:3.5
+  args: 
+    chdir: mirrored-images/ai
+    creates: pause-{{ ai_image_tag }}.tar
 
 - name: Mirror OpenShift install images to local disk 
   shell:
@@ -69,7 +113,7 @@
 - name: Debug output from registry create task
   debug:
     var: create_local_registry.stdout_lines
-    
+
 - name: Local reg credentials
   set_fact:
     local_reg_creds: "{{ 'init:' + mirror_registry_password }}"

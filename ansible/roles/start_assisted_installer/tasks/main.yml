@@ -21,6 +21,54 @@
       args:
         chdir: "mirrored-images/ai"
 
+    - name: Copy assisted installer postgresql images to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/postgresql-12-centos7-centos7.tar docker://{{ sno_local_registry }}/centos7/postgresql-12-centos7:latest
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer ui image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-ui-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-ui:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer  image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer controller image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-controller-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-controller:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer agent image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-agent-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-agent:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer service image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-service-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-service:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer image service  image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/assisted-installer-image-service-{{ ai_image_tag }}.tar docker://{{ sno_local_registry }}/edge-infrastructure/assisted-installer-image-service:{{ ai_image_tag }}
+      args:
+        chdir: "mirrored-images/ai"
+
+    - name: Copy assisted installer k8s.gcr.io/pause:3.5 image to mirror registry
+      shell: |
+        skopeo copy --dest-creds "init:{{ mirror_registry_password }}" docker-archive:$(pwd)/pause-3.5.tar docker://{{ sno_local_registry }}/pause:3.5
+      args:
+        chdir: "mirrored-images/ai"
+
     - name: Setup registries.conf for SNO VM
       template:
         src: registries.conf.j2
@@ -89,4 +137,4 @@
 - name: Give the assisted installer some time to start 
   pause:
     seconds: 10
-    
+
