@@ -116,10 +116,18 @@
     force: yes
   when: not sno_install_is_airgapped
 
-- name: Start the assisted installer
-  command: podman play kube  --creds "init:{{ mirror_registry_password }}" --configmap configmap.yml pod.yml 
+- name: Start the assisted installer airgapped
+  command: podman play kube  --authfile ../auth/pull-secret-airgapped.txt  --configmap configmap.yml pod.yml 
   args:
     chdir: assisted-installer
+  when: sno_install_is_airgapped
+
+- name: Start the assisted installer non airgapped
+  command: podman play kube --configmap configmap.yml pod.yml 
+  args:
+    chdir: assisted-installer
+  when: not sno_install_is_airgapped
+
 
 
 - name: Give the assisted installer some time to start 
