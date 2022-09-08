@@ -8,8 +8,7 @@
     - sno_hostname: "{{ sno_host_prefix }}.{{ sno_cluster_name }}.{{ sno_domain_name }}"
     
   collections:
-    - community.kubernetes
-    - kubernetes.core
+    - community.okd
 
   roles:
     - role: validate_parms
