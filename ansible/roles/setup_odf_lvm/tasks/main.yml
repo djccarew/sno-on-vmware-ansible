@@ -10,6 +10,27 @@
     fail_msg: "kubeconfig  file auth/{{ sno_cluster_name }}-kubeconfig is required for this playbook"
     success_msg: "Required kubeconfig file exists"
 
+- name: Get kubeadmin credentials
+  set_fact:
+    kubeadmin_creds: "{{ lookup('file','auth/' + sno_cluster_name + '-kubeadmin.json') | from_json }}"
+    cluster_api_url: "https://api.{{ sno_cluster_name }}.{{ sno_domain_name }}:8443"
+
+- name: Login to cluster
+  shell: oc login --insecure-skip-tls-verify=true --server={{ cluster_api_url }} -u {{ kubeadmin_creds.username }} -p {{ kubeadmin_creds.password }} > token_fetched.log
+  args:
+    chdir: auth
+    creates: token_fetched.log
+
+- name: Get token
+  shell: oc whoami -t 
+  register: user_token
+  when: not user_token is defined
+
+- name: Save token
+  set_fact:
+    user_token_var: "{{ user_token.stdout }}"
+  when: not user_token_var is defined
+
 - name: Setup for disconnected install
   block:
     - name: Get manifest dir
@@ -44,17 +65,36 @@
         kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
 
     - name: Wait up to  3 mins for Catalog Source to be ready
-      k8s_info: 
-        api_version: "operators.coreos.com/v1alpha1"
-        kind: CatalogSource
-        name: local-index-olm-mirror-redhat-operator-index
-        namespace: openshift-marketplace
-        kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+      uri: 
+        url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-marketplace/catalogsources/local-index-olm-mirror-redhat-operator-index"
+        method: GET
+        return_content: yes
+        status_code: 200
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ user_token_var }}"
       register: airgapped_cs
-      until: airgapped_cs.api_found and airgapped_cs.resources[0].status.connectionState.lastObservedState == "READY"
-      delay: 10
-      retries: 18
-      ignore_errors: yes
+  #    until: airgapped_cs.api_found and airgapped_cs.resources[0].status.connectionState.lastObservedState == "READY"
+  #    delay: 10
+  #    retries: 18
+  #    ignore_errors: yes
+
+    - name: debug
+      debug:
+        var: airgapped_cs.json
+
+    # - name: Wait up to  3 mins for Catalog Source to be ready
+    #   k8s_info: 
+    #     api_version: "operators.coreos.com/v1alpha1"
+    #     kind: CatalogSource
+    #     name: local-index-olm-mirror-redhat-operator-index
+    #     namespace: openshift-marketplace
+    #     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+    #   register: airgapped_cs
+    #   until: airgapped_cs.api_found and airgapped_cs.resources[0].status.connectionState.lastObservedState == "READY"
+    #   delay: 10
+    #   retries: 18
+    #   ignore_errors: yes
 
   when:  sno_install_is_airgapped 
 
