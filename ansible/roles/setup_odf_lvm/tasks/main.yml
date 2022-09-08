@@ -13,7 +13,7 @@
 - name: Get kubeadmin credentials
   set_fact:
     kubeadmin_creds: "{{ lookup('file','auth/' + sno_cluster_name + '-kubeadmin.json') | from_json }}"
-    cluster_api_url: "https://api.{{ sno_cluster_name }}.{{ sno_domain_name }}:8443"
+    cluster_api_url: "https://api.{{ sno_cluster_name }}.{{ sno_domain_name }}:6443"
 
 - name: Login to cluster
   shell: oc login --insecure-skip-tls-verify=true --server={{ cluster_api_url }} -u {{ kubeadmin_creds.username }} -p {{ kubeadmin_creds.password }} > token_fetched.log
