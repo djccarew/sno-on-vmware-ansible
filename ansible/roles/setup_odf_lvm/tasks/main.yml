@@ -71,7 +71,7 @@
         headers:
           Authorization: "Bearer {{ user_token_var }}"
       register: airgapped_cs
-      until: airgapped_cs.status == 200 and airgapped_cs.json.status.connectionState.lastObservedState == "READY"
+      until: airgapped_cs.status is definde and airgapped_cs.status == 200 and airgapped_cs.json.status.connectionState.lastObservedState == "READY"
       delay: 10
       retries: 18
 
