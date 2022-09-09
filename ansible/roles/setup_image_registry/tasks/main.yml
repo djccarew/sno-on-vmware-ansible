@@ -1,4 +1,43 @@
 ---
+- name: Look for kubeconfig file
+  stat:
+    path: auth/{{ sno_cluster_name }}-kubeconfig
+  register: kubeconfig_file
+
+- name: Verify that kubeconfig file exists
+  assert:
+    that:  kubeconfig_file.stat.exists
+    fail_msg: "kubeconfig  file auth/{{ sno_cluster_name }}-kubeconfig is required for this playbook"
+    success_msg: "Required kubeconfig file exists"
+
+- name: Look for kubeadmin.json file
+  stat:
+    path: auth/{{ sno_cluster_name }}-kubeadmin.json
+  register: kubeadmin_file
+
+- name: Verify that kubeadmin.json file exists
+  assert:
+    that:  kubeadmin_file.stat.exists
+    fail_msg: "kubeadmin file auth/{{ sno_cluster_name }}-kubeadmin.json is required for this playbook"
+    success_msg: "Required kubeadmin.json file exists"
+
+- name: Get kubeadmin credentials
+  set_fact:
+    kubeadmin_creds: "{{ lookup('file','auth/' + sno_cluster_name + '-kubeadmin.json') | from_json }}"
+    cluster_api_url: "https://api.{{ sno_cluster_name }}.{{ sno_domain_name }}:6443"
+
+- name: Log in (obtain access token)
+  community.okd.openshift_auth:
+    username: "{{ kubeadmin_creds.username }}"
+    password: "{{ kubeadmin_creds.password }}"
+    validate_certs: no
+    host: "{{ cluster_api_url }}"
+  register: openshift_auth_results
+
+- name: Save token
+  set_fact:
+    user_token_var: "{{ openshift_auth_results.openshift_auth.api_key }}"
+
 - name: PVC for image registry
   community.okd.k8s:
     state: present
@@ -67,16 +106,21 @@
         path: /spec/defaultRoute
         value: true
 
-- name: Get registry endpoint
-  k8s_info:
-    api_version: route.openshift.io/v1
-    kind: Route
-    name:  default-route
-    namespace: openshift-image-registry
+- name: Wait up to 3 minutes for registry endpoint
+  uri: 
+    url: "{{ cluster_api_url }}/apis/route.openshift.io/v1/namespaces/openshift-image-registry/routes/default_route"
+    method: GET
+    return_content: yes
+    status_code: [200,404]
+    body_format: json
     validate_certs: no
-    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
+    headers:
+      Authorization: "Bearer {{ user_token_var }}"
   register: registry_route
+  until: registry_route.status is defined and registry_route.status == 200
+  delay: 10
+  retries: 18
 
 - name: Print Registry route hostname
   debug:
-    msg: "Internal Registry URL is https://{{ registry_route.resources[0].spec.host }}"
+    msg: "Internal Registry URL is https://{{ registry_route.json.spec.host }}"

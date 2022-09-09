@@ -10,6 +10,17 @@
     fail_msg: "kubeconfig  file auth/{{ sno_cluster_name }}-kubeconfig is required for this playbook"
     success_msg: "Required kubeconfig file exists"
 
+- name: Look for kubeadmin.json file
+  stat:
+    path: auth/{{ sno_cluster_name }}-kubeadmin.json
+  register: kubeadmin_file
+
+- name: Verify that kubeadmin.json file exists
+  assert:
+    that:  kubeadmin_file.stat.exists
+    fail_msg: "kubeadmin file auth/{{ sno_cluster_name }}-kubeadmin.json is required for this playbook"
+    success_msg: "Required kubeadmin.json file exists"
+
 - name: Get kubeadmin credentials
   set_fact:
     kubeadmin_creds: "{{ lookup('file','auth/' + sno_cluster_name + '-kubeadmin.json') | from_json }}"
