@@ -67,6 +67,7 @@
         return_content: yes
         status_code: 200
         body_format: json
+        validate_certs: no
         headers:
           Authorization: "Bearer {{ user_token_var }}"
       register: airgapped_cs
