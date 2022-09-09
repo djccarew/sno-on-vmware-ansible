@@ -108,7 +108,7 @@
 
 - name: Wait up to 3 minutes for registry endpoint
   uri: 
-    url: "{{ cluster_api_url }}/apis/route.openshift.io/v1/namespaces/openshift-image-registry/routes/default_route"
+    url: "{{ cluster_api_url }}/apis/route.openshift.io/v1/namespaces/openshift-image-registry/routes/default-route"
     method: GET
     return_content: yes
     status_code: [200,404]
