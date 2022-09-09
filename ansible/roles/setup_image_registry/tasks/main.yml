@@ -1,6 +1,6 @@
 ---
 - name: PVC for image registry
-  k8s:
+  community.okd.k8s:
     state: present
     validate_certs: no
     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
