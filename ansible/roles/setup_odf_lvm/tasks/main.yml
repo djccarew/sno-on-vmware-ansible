@@ -19,6 +19,8 @@
   community.okd.openshift_auth:
     username: "{{ kubeadmin_creds.username }}"
     password: "{{ kubeadmin_creds.password }}"
+    validate_certs: no
+    host: "{{ cluster_api_url }}"
   register: openshift_auth_results
 
 - name: Save token
