@@ -109,19 +109,6 @@
   delay: 10
   retries: 18
 
-# - name: Wait up to 3 min for LVM Operator CSV to be avail
-#   k8s_info:
-#     api_version: "operators.coreos.com/v1alpha1"
-#     kind: ClusterServiceVersion
-#     name: "{{ odf_lvm_subscription.resources[0].status.currentCSV }}"
-#     namespace: openshift-storage
-#     validate_certs: no
-#     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
-#   register: odf_lvm_csv
-#   until: odf_lvm_csv.api_found and odf_lvm_csv.resources[0].status is defined and odf_lvm_csv.resources[0].status.phase == "Succeeded"
-#   retries: 18
-#   delay: 10
-
 - name: Wait up to  3 mins for LVM Operator CSV to be avail
   uri: 
     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-storage/clusterserviceversions/{{ odf_lvm_subscription.json.status.currentCSV }}"
@@ -143,20 +130,6 @@
     src: "k8s/{{ sno_version }}/odflvm-lvmcluster.yml"
     validate_certs: no
     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
-  
-# - name: Wait up to 5 min for LVM Cluster to be avail
-#   k8s_info:
-#     api_version: "lvm.topolvm.io/v1alpha1"
-#     kind: LVMCluster
-#     name:  lvmcluster-sno
-#     namespace: openshift-storage
-#     validate_certs: no
-#     kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
-#   register: odf_lvm_cluster
-#   until: odf_lvm_cluster.api_found  and odf_lvm_cluster.resources[0].status.deviceClassStatuses is defined and odf_lvm_cluster.resources[0].status.deviceClassStatuses[0].nodeStatus[0].status == "Ready"
-#   retries: 30
-#   delay: 10
-
 
 - name: Wait up to  5 mins for for LVM Cluster to be avail
   uri: 
@@ -179,7 +152,6 @@
     oc patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
   environment:
     KUBECONFIG: "auth/{{ sno_cluster_name }}-kubeconfig"
-
 
  
 - name: Ending message

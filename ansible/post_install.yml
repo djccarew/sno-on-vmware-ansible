@@ -16,7 +16,7 @@
     - role: patch_operator_hub
       when: sno_install_is_airgapped 
     - role: setup_odf_lvm
-  #  - role: setup_image_registry
+    - role: setup_image_registry
 
 
   post_tasks:
