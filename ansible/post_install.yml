@@ -7,15 +7,12 @@
     - sno_util_hostname: "{{ sno_util_host_prefix }}.{{ sno_domain_name }}"
     - sno_hostname: "{{ sno_host_prefix }}.{{ sno_cluster_name }}.{{ sno_domain_name }}"
     
-  collections:
-    - community.okd
-
   roles:
     - role: validate_parms
       when: vars_validated is not defined
     - role: patch_operator_hub
       when: sno_install_is_airgapped 
-   # - role: setup_odf_lvm
+    - role: setup_odf_lvm
     - role: setup_image_registry
 
 

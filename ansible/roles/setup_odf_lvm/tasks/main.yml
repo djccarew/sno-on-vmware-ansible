@@ -104,21 +104,31 @@
     - "k8s/{{ sno_version }}/odflvm-operatorgroup.yml"
     - "k8s/{{ sno_version }}/odflvm-subscription.yml"
 
-
 - name: Wait up to  3 mins for Subscription to be ready
-  uri: 
-    url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-storage/subscriptions/odf-lvm-operator"
-    method: GET
-    return_content: yes
-    status_code: [200,404]
-    body_format: json
-    validate_certs: no
-    headers:
-      Authorization: "Bearer {{ user_token_var }}"
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    name: odf-lvm-operator
+    namespace: openshift-storageclass
   register: odf_lvm_subscription
   until: odf_lvm_subscription.status == 200 
   delay: 10
   retries: 18
+
+# - name: Wait up to  3 mins for Subscription to be ready
+#   uri: 
+#     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-storage/subscriptions/odf-lvm-operator"
+#     method: GET
+#     return_content: yes
+#     status_code: [200,404]
+#     body_format: json
+#     validate_certs: no
+#     headers:
+#       Authorization: "Bearer {{ user_token_var }}"
+#   register: odf_lvm_subscription
+#   until: odf_lvm_subscription.status == 200 
+#   delay: 10
+#   retries: 18
 
 - name: Wait up to  3 mins for LVM Operator CSV to be avail
   uri: 
