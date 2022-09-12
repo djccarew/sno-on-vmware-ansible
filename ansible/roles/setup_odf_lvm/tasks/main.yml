@@ -138,7 +138,7 @@
     name: "{{ odf_lvm_subscription.resources[0].status.currentCSV }}"
     namespace: openshift-storageclass
   register: odf_lvm_csf
-  until: odf_lvm_csf.api_found is defined and odf_lvm_csf.api_found and (odf_lvm_csf.resources | list > 0) and odf_lvm_csf.resources[0].status.phase == "Succeeded"
+  until: odf_lvm_csf.api_found is defined and odf_lvm_csf.api_found and odf_lvm_csf.resources is defined and odf_lvm_csf.resources[0].status.phase == "Succeeded"
   delay: 10
   retries: 18
   ignore_errors: true
@@ -172,7 +172,7 @@
     name: lvmcluster-sno
     namespace: openshift-storage
   register: odf_lvm_cluster
-  until: odf_lvm_cluster.api_found is defined and odf_lvm_cluster.api_found and  (odf_lvm_cluster.resources | list > 0)  and odf_lvm_cluster.resources[0].status.deviceClassStatuses is defined and odf_lvm_cluster.resources[0].status.deviceClassStatuses[0].nodeStatus[0].status == "Ready"
+  until: odf_lvm_cluster.api_found is defined and odf_lvm_cluster.api_found and  odf_lvm_cluster.resources is defined  and odf_lvm_cluster.resources[0].status.deviceClassStatuses is defined and odf_lvm_cluster.resources[0].status.deviceClassStatuses[0].nodeStatus[0].status == "Ready"
   delay: 10
   retries: 30
   ignore_errors: yes
