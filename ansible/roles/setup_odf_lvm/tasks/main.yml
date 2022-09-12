@@ -10,34 +10,6 @@
     fail_msg: "kubeconfig  file auth/{{ sno_cluster_name }}-kubeconfig is required for this playbook"
     success_msg: "Required kubeconfig file exists"
 
-- name: Look for kubeadmin.json file
-  stat:
-    path: auth/{{ sno_cluster_name }}-kubeadmin.json
-  register: kubeadmin_file
-
-- name: Verify that kubeadmin.json file exists
-  assert:
-    that:  kubeadmin_file.stat.exists
-    fail_msg: "kubeadmin file auth/{{ sno_cluster_name }}-kubeadmin.json is required for this playbook"
-    success_msg: "Required kubeadmin.json file exists"
-
-- name: Get kubeadmin credentials
-  set_fact:
-    kubeadmin_creds: "{{ lookup('file','auth/' + sno_cluster_name + '-kubeadmin.json') | from_json }}"
-    cluster_api_url: "https://api.{{ sno_cluster_name }}.{{ sno_domain_name }}:6443"
-
-- name: Log in (obtain access token)
-  community.okd.openshift_auth:
-    username: "{{ kubeadmin_creds.username }}"
-    password: "{{ kubeadmin_creds.password }}"
-    validate_certs: no
-    host: "{{ cluster_api_url }}"
-  register: openshift_auth_results
-
-- name: Save token
-  set_fact:
-    user_token_var: "{{ openshift_auth_results.openshift_auth.api_key }}"
-
 - name: Setup for disconnected install
   block:
     - name: Get manifest dir
@@ -83,21 +55,6 @@
       retries: 18
       ignore_errors: yes
 
-    # - name: Wait up to  3 mins for Catalog Source to be ready
-    #   uri: 
-    #     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-marketplace/catalogsources/local-index-olm-mirror-redhat-operator-index"
-    #     method: GET
-    #     return_content: yes
-    #     status_code: [200,404]
-    #     body_format: json
-    #     validate_certs: no
-    #     headers:
-    #       Authorization: "Bearer {{ user_token_var }}"
-    #   register: airgapped_cs
-    #   until: airgapped_cs.status is defined and airgapped_cs.status == 200 and airgapped_cs.json.status.connectionState.lastObservedState == "READY"
-    #   delay: 10
-    #   retries: 18
-
   when:  sno_install_is_airgapped 
 
 - name: "Install ODF LVM Operator"
@@ -127,21 +84,6 @@
   debug:
     var: odf_lvm_subscription
 
-# - name: Wait up to  3 mins for Subscription to be ready
-#   uri: 
-#     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-storage/subscriptions/odf-lvm-operator"
-#     method: GET
-#     return_content: yes
-#     status_code: [200,404]
-#     body_format: json
-#     validate_certs: no
-#     headers:
-#       Authorization: "Bearer {{ user_token_var }}"
-#   register: odf_lvm_subscription
-#   until: odf_lvm_subscription.status == 200 
-#   delay: 10
-#   retries: 18
-
 - name: Wait up to  3 mins for LVM Operator CSV to be avail
   kubernetes.core.k8s_info:
     api_version: operators.coreos.com/v1alpha1
@@ -157,21 +99,6 @@
 - name: debug
   debug:
     var: odf_lvm_csv
-
-# - name: Wait up to  3 mins for LVM Operator CSV to be avail
-#   uri: 
-#     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-storage/clusterserviceversions/{{ odf_lvm_subscription.json.status.currentCSV }}"
-#     method: GET
-#     return_content: yes
-#     status_code: [200,404]
-#     body_format: json
-#     validate_certs: no
-#     headers:
-#       Authorization: "Bearer {{ user_token_var }}"
-#   register: odf_lvm_csv
-#   until: odf_lvm_subscription.status == 200 and odf_lvm_csv.json.status is defined and odf_lvm_csv.json.status.phase == "Succeeded"
-#   delay: 10
-#   retries: 18
 
 - name: "Create  LVMCluster instance"
   community.okd.k8s:
@@ -192,29 +119,12 @@
   retries: 30
   ignore_errors: yes
 
-# - name: Wait up to  5 mins for for LVM Cluster to be avail
-#   uri: 
-#     url: "{{ cluster_api_url }}/apis/lvm.topolvm.io/v1alpha1/namespaces/openshift-storage/lvmclusters/lvmcluster-sno"
-#     method: GET
-#     return_content: yes
-#     status_code: [200,404]
-#     body_format: json
-#     validate_certs: no
-#     headers:
-#       Authorization: "Bearer {{ user_token_var }}"
-#   register: odf_lvm_cluster
-#   until: odf_lvm_cluster.status == 200 and odf_lvm_cluster.json.status.deviceClassStatuses is defined and odf_lvm_cluster.json.status.deviceClassStatuses[0].nodeStatus[0].status == "Ready"
-#   delay: 10
-#   retries: 30
-
-
 - name: Make ODF LVM storage class the default
   shell: |
     oc patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
   environment:
     KUBECONFIG: "auth/{{ sno_cluster_name }}-kubeconfig"
 
- 
 - name: Ending message
   debug:
     msg: "ODF LVM successfully installed and configured"
