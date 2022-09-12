@@ -135,4 +135,4 @@
 
 - name: Print Registry route hostname
   debug:
-    msg: "Internal Registry URL is https://{{ registry_route.json.spec.host }}"
+    msg: "Internal Registry URL is https://{{ registry_route.resources[0].spec.host }}"
