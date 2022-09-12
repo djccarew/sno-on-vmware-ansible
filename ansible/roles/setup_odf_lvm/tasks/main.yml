@@ -145,7 +145,7 @@
     name: "{{ odf_lvm_subscription.resources[0].status.currentCSV }}"
     namespace: openshift-storage
   register: odf_lvm_csv
-  until: odf_lvm_csv.api_found is defined and odf_lvm_csv.api_found and odf_lvm_csv.resources is defined and odf_lvm_csv.resources[0].status.phase == "Succeeded"
+  until: odf_lvm_csv.api_found is defined and odf_lvm_csv.api_found 
   delay: 10
   retries: 18
   ignore_errors: true
