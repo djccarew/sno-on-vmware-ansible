@@ -72,24 +72,31 @@
         kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
 
     - name: Wait up to  3 mins for Catalog Source to be ready
-      uri: 
-        url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-marketplace/catalogsources/local-index-olm-mirror-redhat-operator-index"
-        method: GET
-        return_content: yes
-        status_code: [200,404]
-        body_format: json
-        validate_certs: no
-        headers:
-          Authorization: "Bearer {{ user_token_var }}"
+      kubernetes.core.k8s_info:
+        api_version: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: local-index-olm-mirror-redhat-operator-index
+        namespace: openshift-marketplace
       register: airgapped_cs
-      until: airgapped_cs.status is defined and airgapped_cs.status == 200 and airgapped_cs.json.status.connectionState.lastObservedState == "READY"
+      until: airgapped_cs.api_found is defined and airgapped_cs.api_found
       delay: 10
       retries: 18
+      ignore_errors: yes
 
-
-    - name: debug
-      debug:
-        var: airgapped_cs.json
+    # - name: Wait up to  3 mins for Catalog Source to be ready
+    #   uri: 
+    #     url: "{{ cluster_api_url }}/apis/operators.coreos.com/v1alpha1/namespaces/openshift-marketplace/catalogsources/local-index-olm-mirror-redhat-operator-index"
+    #     method: GET
+    #     return_content: yes
+    #     status_code: [200,404]
+    #     body_format: json
+    #     validate_certs: no
+    #     headers:
+    #       Authorization: "Bearer {{ user_token_var }}"
+    #   register: airgapped_cs
+    #   until: airgapped_cs.status is defined and airgapped_cs.status == 200 and airgapped_cs.json.status.connectionState.lastObservedState == "READY"
+    #   delay: 10
+    #   retries: 18
 
   when:  sno_install_is_airgapped 
 
@@ -142,6 +149,10 @@
   delay: 10
   retries: 18
   ignore_errors: true
+
+- name: debug
+  debug:
+    var: odf_lvm_csv
 
 # - name: Wait up to  3 mins for LVM Operator CSV to be avail
 #   uri: 
