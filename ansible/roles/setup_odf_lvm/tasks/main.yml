@@ -118,7 +118,7 @@
     name: odf-lvm-operator
     namespace: openshift-storage
   register: odf_lvm_subscription
-  until: odf_lvm_subscription.api_found is defined and odf_lvm_subscription.api_found
+  until: odf_lvm_subscription.api_found is defined and odf_lvm_subscription.api_found and (odf_lvm_subscription.resources | list > 0)
   delay: 10
   retries: 18
   ignore_errors: true
