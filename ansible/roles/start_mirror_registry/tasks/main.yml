@@ -48,25 +48,40 @@
     regexp: "^127.*{{ sno_util_hostname }}$"
   become: yes
 
-- name: Copy CA file to local OS
+- name: Copy CA file to local OS (Ubuntu)
   copy:
     dest: "/usr/local/share/ca-certificates/quayCA.crt"
     src: "/etc/quay-install/quay-rootCA/rootCA.pem"
   delegate_to: localhost
   become: yes
   register: copy_quay_ca
+  when: ansible_distribution ==  "Ubuntu"
+
+- name: Copy CA file to local OS (RHEL)
+  copy:
+    dest: "/etc/pki/ca-trust/source/anchors/quayCA.crt"
+    src: "/etc/quay-install/quay-rootCA/rootCA.pem"
+  delegate_to: localhost
+  become: yes
+  register: copy_quay_ca
+  when: ansible_distribution ==  "RedHat"
 
 - name: Copy CA to local certs
   copy:
     dest: "certs/ca/quayCA.crt"
     src: "/etc/quay-install/quay-rootCA/rootCA.pem"
   delegate_to: localhost
-  when: copy_quay_ca.changed
+  when: copy_quay_ca.changed 
 
-- name: Update local os ca certs
+- name: Update local os ca certs (Ubuntu)
   shell: update-ca-certificates
   become: yes
-  when: copy_quay_ca.changed
+  when: copy_quay_ca.changed and ansible_distribution ==  "Ubuntu"
+
+- name: Update local os ca certs (RHEL)
+  shell: update-ca-trust
+  become: yes
+  when: copy_quay_ca.changed and ansible_distribution ==  "RedHat"
 
 - name: Mirror install images
   shell: 
