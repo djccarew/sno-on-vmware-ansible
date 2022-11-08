@@ -14,19 +14,19 @@ data:
   DEPLOY_TARGET: onprem
   DISK_ENCRYPTION_SUPPORT: "true"
   DUMMY_IGNITION: "false"
-  ENABLE_SINGLE_NODE_DNSMASQ: "true"
+  ENABLE_SINGLE_NODE_DNSMASQ: "true" 
   HW_VALIDATOR_REQUIREMENTS: '[{"version":"default","master":{"cpu_cores":4,"ram_mib":16384,"disk_size_gb":100,"installation_disk_speed_threshold_ms":10,"network_latency_threshold_ms":100,"packet_loss_percentage":0},"worker":{"cpu_cores":2,"ram_mib":8192,"disk_size_gb":100,"installation_disk_speed_threshold_ms":10,"network_latency_threshold_ms":1000,"packet_loss_percentage":10},"sno":{"cpu_cores":8,"ram_mib":16384,"disk_size_gb":100,"installation_disk_speed_threshold_ms":10}}]'
   IMAGE_SERVICE_BASE_URL: http://{{ sno_util_hostname }}:8888
   IPV6_SUPPORT: "true"
   ISO_IMAGE_TYPE: "full-iso"
   LISTEN_PORT: "8888"
   NTP_DEFAULT_SERVER: "{{ sno_util_hostname }}"
-  OS_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url":"http://{{ sno_util_hostname }}/pub/openshift-v4/dependencies/rhcos/4.10/4.10.16/rhcos-4.10.16-x86_64-live.x86_64.iso","version":"410.84.202205191234-0"}]'
+  OS_IMAGES: '[{"openshift_version":"{{ sno_version }}","cpu_architecture":"x86_64","url":"{{ rhcos_iso_url }}","version":"{{ rhcos_iso_version }}"}]'
   POSTGRESQL_DATABASE: installer
   POSTGRESQL_PASSWORD: admin
   POSTGRESQL_USER: admin
   PUBLIC_CONTAINER_REGISTRIES: "{{ sno_util_hostname }}:8443"
-  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "{{ sno_util_hostname }}:8443/{{ sno_local_release }}:4.10.22-x86_64","version":"4.10.22","default":true}]'
+  RELEASE_IMAGES: '[{"openshift_version":"4.10","cpu_architecture":"x86_64","url": "{{ sno_util_hostname }}:8443/{{ sno_local_release }}:{{ sno_release }}-x86_64","version":"{{ sno_release }}","default":true}]'
   SERVICE_BASE_URL: http://{{ sno_util_hostname }}:8090
   STORAGE: filesystem
   ENABLE_UPGRADE_AGENT: "false"

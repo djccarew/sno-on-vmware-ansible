@@ -1,4 +1,9 @@
 ---
+- name: Make sure polling script is executable
+  file:
+    path: scripts/poll-for-install-completion.sh 
+    mode: '0755'
+
 - name: Poll for cluster install completion for 90 minutes
   shell: |
     scripts/poll-for-install-completion.sh  {{ sno_cluster_name }}

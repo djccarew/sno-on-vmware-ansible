@@ -85,6 +85,7 @@
     kind: Route
     name: default-route
     namespace: openshift-image-registry
+    kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
   register: registry_route
   until: registry_route.api_found is defined and registry_route.api_found and registry_route.resources is defined and (registry_route.resources | length) == 1
   delay: 10

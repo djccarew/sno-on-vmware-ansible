@@ -1,6 +1,6 @@
 ---
 - name: Stop if already running
-  shell: podman pod stop assisted-installer &&  podman pod stop assisted-installer
+  shell: podman pod stop assisted-installer &&  podman pod rm -f assisted-installer
   args:
     chdir: assisted-installer
   ignore_errors: yes

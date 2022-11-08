@@ -49,6 +49,7 @@
         kind: CatalogSource
         name: local-index-olm-mirror-redhat-operator-index
         namespace: openshift-marketplace
+        kubeconfig: "auth/{{ sno_cluster_name }}-kubeconfig"
       register: airgapped_cs
       until: airgapped_cs.api_found is defined and airgapped_cs.api_found and airgapped_cs.resources  is defined and (airgapped_cs.resources | length) > 0 and airgapped_cs.resources[0].status.connectionState.lastObservedState == 'READY'
       delay: 10
